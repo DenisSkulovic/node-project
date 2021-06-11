@@ -5,7 +5,7 @@ const pool = require("./db");
 async function get_survey_for_survey_id(survey_id) {
   let client = await pool.connect();
   try {
-    let result = await client.query(
+    return await client.query(
       `
       SELECT * 
       FROM survey 
@@ -13,8 +13,6 @@ async function get_survey_for_survey_id(survey_id) {
     `,
       [survey_id]
     );
-    console.log("Query successful.");
-    return result;
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -27,17 +25,14 @@ async function get_survey_for_survey_id(survey_id) {
 async function get_survey_list_for_email(email) {
   let client = await pool.connect();
   try {
-    let result = await client.query(
-      `
-      SELECT *
+    return await client.query(
+      `SELECT *
       FROM survey s
       LEFT JOIN account a
       ON s.account_id = a.id
-      WHERE a.email = 1$;
-    `,
+      WHERE a.email = $1;`,
       [email]
     );
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -57,14 +52,12 @@ async function create_survey_for_email(email, survey_title) {
     );
 
     // create surveys table entry
-    let survey_id = await client.query(
+    return await client.query(
       `INSERT INTO surveys (title, account_id)
         VALUES ($1, $2)
-        RETURNING id;`,
+        RETURNING *;`,
       [survey_title, account_id]
     );
-
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -77,15 +70,13 @@ async function create_survey_for_email(email, survey_title) {
 async function update_survey_title_for_survey_id(survey_title, survey_id) {
   let client = await pool.connect();
   try {
-    let updated_row = await client.query(
+    return await client.query(
       `UPDATE surveys
       SET title = $1
       WHERE id = $2
       RETURNING id, title, account_id, created_at, modified_at;`,
       [survey_title, survey_id]
     );
-    console.log("updated_row", updated_row);
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -98,7 +89,7 @@ async function update_survey_title_for_survey_id(survey_title, survey_id) {
 async function delete_survey_by_survey_id(survey_id) {
   let client = await pool.connect();
   try {
-    client.query(
+    return client.query(
       `DELETE FROM surveys
       WHERE id = $1`,
       [survey_id],

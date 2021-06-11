@@ -1,15 +1,16 @@
 const pool = require("./db");
+const jwt = require("express-jwt");
+const { secret } = require("../config.json");
 
 async function get_account_passwordless(email) {
   let client = await pool.connect();
   try {
-    let result = await client.query(
+    return await client.query(
       `SELECT id, email, created_at, is_admin, modified_at 
         FROM accounts 
         WHERE email = $1;`,
       [email]
     );
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -20,11 +21,9 @@ async function get_account_passwordless(email) {
 async function get_account_full(email) {
   let client = await pool.connect();
   try {
-    let result = await client.query(
-      `SELECT * FROM accounts WHERE email = $1;`,
-      [email]
-    );
-    console.log("Query successful.");
+    return await client.query(`SELECT * FROM accounts WHERE email = $1;`, [
+      email,
+    ]);
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -35,8 +34,7 @@ async function get_account_full(email) {
 async function login() {
   let client = await pool.connect();
   try {
-    await client.query(``, []);
-    console.log("Query successful.");
+    return await client.query(``, []);
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -47,8 +45,7 @@ async function login() {
 async function register(email, password, is_admin = false) {
   let client = await pool.connect();
   try {
-    await client.query(``, []);
-    console.log("Query successful.");
+    return await client.query(``, []);
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -59,6 +56,7 @@ async function register(email, password, is_admin = false) {
 async function change_password() {
   let client = await pool.connect();
   try {
+    return await client.query(``, []);
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {

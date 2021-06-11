@@ -5,7 +5,7 @@ const pool = require("./db");
 async function get_filled_field_for_filled_field_id(filled_field_id) {
   let client = await pool.connect();
   try {
-    let result = await client.query(
+    return await client.query(
       `
       SELECT * 
       FROM filled_fields
@@ -13,7 +13,6 @@ async function get_filled_field_for_filled_field_id(filled_field_id) {
     `,
       [filled_field_id]
     );
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -26,17 +25,14 @@ async function get_filled_field_for_filled_field_id(filled_field_id) {
 async function get_filled_fields_list_for_filled_survey_id(filled_survey_id) {
   let client = await pool.connect();
   try {
-    let result = await client.query(
-      `
-      SELECT *
+    return await client.query(
+      `SELECT *
       FROM filled_fields ff
       LEFT JOIN filled_surveys fs
       ON ff.filled_survey_id = fs.id
-      WHERE fs.id = 1$;
-    `,
+      WHERE fs.id = $1;`,
       [filled_survey_id]
     );
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -50,14 +46,12 @@ async function create_filled_field(survey_field_id, filled_survey_id, answer) {
   let client = await pool.connect();
   try {
     // create survey_fields table entry
-    let result = await client.query(
+    return await client.query(
       `INSERT INTO filled_fields (survey_field_id, filled_survey_id, answer)
         VALUES ($1, $2, $3)
         RETURNING *;`,
       [survey_field_id, filled_survey_id, answer]
     );
-
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -75,7 +69,7 @@ async function update_filled_field(
 ) {
   let client = await pool.connect();
   try {
-    let result = await client.query(
+    return await client.query(
       `UPDATE survey_fields
       SET survey_field_id = $1
         filled_survey_id = $2
@@ -84,9 +78,6 @@ async function update_filled_field(
       RETURNING *;`,
       [survey_field_id, filled_survey_id, answer, filled_field_id]
     );
-
-    console.log("result", result);
-    console.log("Query successful.");
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -99,17 +90,10 @@ async function update_filled_field(
 async function delete_filled_field(filled_field_id) {
   let client = await pool.connect();
   try {
-    client.query(
+    return await client.query(
       `DELETE FROM filled_fields
       WHERE id = $1`,
-      [filled_field_id],
-      (error, results) => {
-        release();
-        if (error) {
-          return console.log("Query error: ", error);
-        }
-        console.log("Query successful.");
-      }
+      [filled_field_id]
     );
   } catch (error) {
     return console.log("Query error: ", error);

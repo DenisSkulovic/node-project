@@ -23,9 +23,19 @@ app.get("/favicon.ico", (req, res) => res.status(204));
 // ROUTES
 let adminRouter = require("./api/admin");
 let accountRouter = require("./api/account");
+let fieldTypesRouter = require("./api/field_types");
+let filledFieldsRouter = require("./api/filled_fields");
+let filledSurveysRouter = require("./api/filled_surveys");
+let surveyFieldsRouter = require("./api/survey_fields");
+let surveysRouter = require("./api/surveys");
 
 app.use("/admin", adminRouter);
 app.use("/account", accountRouter);
+app.use("/field-types", fieldTypesRouter);
+app.use("/filled-fields", filledFieldsRouter);
+app.use("/filled-surveys", filledSurveysRouter);
+app.use("/survey-fields", surveyFieldsRouter);
+app.use("/surveys", surveysRouter);
 //####################################################################
 
 //####################################################################

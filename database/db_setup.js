@@ -13,8 +13,8 @@ async function resetDatabase() {
   
     CREATE TABLE accounts(
     id SERIAL,
-    email VARCHAR (255),
-    password VARCHAR(255),
+    email VARCHAR (255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     is_admin BOOLEAN NOT NULL ,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -33,7 +33,7 @@ async function resetDatabase() {
     CREATE TABLE surveys(
     id SERIAL,
     title VARCHAR (255) NOT NULL,
-    account_id BIGINT,
+    account_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id),
