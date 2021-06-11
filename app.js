@@ -3,6 +3,8 @@ let express = require("express");
 let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
+const session = require("express-session");
+const { secret } = require("./config.json");
 
 let app = express();
 
@@ -15,6 +17,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "static")));
+app.use(
+  session({
+    secret: secret,
+    resave: true,
+    saveUninitialized: true,
+    rolling: true,
+    cookie: {
+      httpOnly: false,
+      maxAge: 1 * 60 * 60 * 1000,
+    },
+  })
+);
 
 // catch the annoying useless favicon.ico request (because this is an API, no HTML is served)
 app.get("/favicon.ico", (req, res) => res.status(204));
@@ -23,6 +37,7 @@ app.get("/favicon.ico", (req, res) => res.status(204));
 // ROUTES
 let adminRouter = require("./api/admin");
 let accountRouter = require("./api/account");
+let authRouter = require("./api/auth");
 let fieldTypesRouter = require("./api/field_types");
 let filledFieldsRouter = require("./api/filled_fields");
 let filledSurveysRouter = require("./api/filled_surveys");
@@ -31,18 +46,12 @@ let surveysRouter = require("./api/surveys");
 
 app.use("/admin", adminRouter);
 app.use("/account", accountRouter);
+app.use("/auth", authRouter);
 app.use("/field-types", fieldTypesRouter);
 app.use("/filled-fields", filledFieldsRouter);
 app.use("/filled-surveys", filledSurveysRouter);
 app.use("/survey-fields", surveyFieldsRouter);
 app.use("/surveys", surveysRouter);
-//####################################################################
-
-//####################################################################
-// auth
-let authenticateJwtRequestToken = require("./auth/auth");
-
-app.use(authenticateJwtRequestToken());
 //####################################################################
 
 // catch 404 and forward to error handler

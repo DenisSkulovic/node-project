@@ -15,12 +15,12 @@ async function resetDatabase() {
     id SERIAL,
     email VARCHAR (255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    is_admin BOOLEAN NOT NULL ,
+    isadmin BOOLEAN NOT NULL ,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
     );
-    ALTER TABLE accounts ALTER COLUMN is_admin SET DEFAULT false;
+    ALTER TABLE accounts ALTER COLUMN isadmin SET DEFAULT false;
   
     CREATE TABLE field_types(
     id SERIAL,
@@ -130,9 +130,16 @@ async function resetDatabase() {
     FOR EACH ROW
     EXECUTE PROCEDURE trigger_set_timestamp();
     `);
-    return "Database reset successful.";
+
+    return await client.query(
+      `
+    INSERT INTO accounts (email, password, isadmin)
+    VALUES ($1, $2, $3);
+    `,
+      ["admin@email.com", "123456789", true]
+    );
   } catch (error) {
-    console.error("Error acquiring client: ", err.stack);
+    console.error("Query Error: ", error);
     return "Query error";
   } finally {
     client.release();
