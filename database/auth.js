@@ -17,7 +17,14 @@ async function getDataForLogin(email) {
 async function register(email, password, is_admin = false) {
   let client = await pool.connect();
   try {
-    return await client.query(``, []);
+    return await client.query(
+      `
+    INSERT INTO accounts (email, password, isadmin)
+        VALUES ($1, $2, $3)
+        RETURNING email, isadmin;
+    `,
+      [email, password, is_admin]
+    );
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {
@@ -25,10 +32,18 @@ async function register(email, password, is_admin = false) {
   }
 }
 
-async function change_password() {
+async function change_password(email, password) {
   let client = await pool.connect();
   try {
-    return await client.query(``, []);
+    return await client.query(
+      `
+    UPDATE accounts
+      SET password = $1
+      WHERE email = $2
+      RETURNING *;
+    `,
+      [password, email]
+    );
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {

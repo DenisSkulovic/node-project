@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
+const saltRounds = 12;
 const {
   getDataForLogin,
   register,
@@ -19,16 +21,20 @@ router.post("/login", async function (req, res, next) {
 });
 
 router.post("/register", async function (req, res, next) {
+  // add express-session logic here later
   let result = await register(req.body.email, req.body.password);
   res.json([{ result: result }]);
 });
 
 router.post("/logout", async function (req, res, next) {
+  // see if express-session handles cookie deletion, if not - find out what it does exactly
   let result = req.session.destroy();
   res.json([{ result: result }]);
 });
 
 router.post("/change-password", async function (req, res, next) {
+  // add some permissions logic here later
+  let result = await change_password(req.body.email, req.body.password);
   res.json([{ result: result }]);
 });
 
