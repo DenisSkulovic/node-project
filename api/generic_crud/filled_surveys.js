@@ -10,6 +10,9 @@ const {
   delete_filled_survey,
 } = require("../../database/filled_surveys");
 
+//
+//
+//
 // ########################################################################################
 //
 // PUBLIC
@@ -21,14 +24,17 @@ router.get("/:filledSurveyID(\\d+)/", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
+//
+//
+//
 // ########################################################################################
 //
 // PUBLIC
@@ -40,62 +46,69 @@ router.get(
     let result = await get_filled_survey_list_for_email(req.params.email);
     if (result) {
       // response
-      res
+      return res
         .status(status["success"])
         .json([{ result: result, message: successMessage }]);
     } else {
-      res.status(status["notfound"]).end();
+      return res.status(status["notfound"]).end();
     }
   }
 );
 
+//
+//
+//
 // ########################################################################################
 //
-// ADMIN
+// PUBLIC
 //
 router.post("/:surveyID(\\d+)/create", async function (req, res, next) {
   // auth
   const accessToken = req.header("AccessToken");
   let user = authenticateAccessToken(accessToken);
-  console.log("user.isadmin", user.isadmin);
-  if (!user || user.isadmin === false) {
-    res.status(status["unauthorized"]).end();
-  }
 
   // query
-  let result = await create_filled_survey_for_survey_id(req.params.surveyID);
+  let result = await create_filled_survey_for_survey_id(
+    req.params.surveyID,
+    user.email
+  );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
+//
+//
+//
 // ########################################################################################
 //
-// ADMIN
+// ADMIN or OWNER
 //
 router.delete("/:filledSurveyID(\\d+)/delete", async function (req, res, next) {
   // auth
   const accessToken = req.header("AccessToken");
   let user = authenticateAccessToken(accessToken);
-  console.log("user.isadmin", user.isadmin);
-  if (!user || user.isadmin === false) {
-    res.status(status["unauthorized"]).end();
+  if (
+    !isOwner_filled_survey(req.params.filledSurveyID, user.email) ||
+    !user.isadmin
+  ) {
+    return res.status(status["unauthorized"]).end();
   }
 
   // query
   let result = await delete_filled_survey(req.params.filledSurveyID);
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 

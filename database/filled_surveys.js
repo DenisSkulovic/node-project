@@ -121,10 +121,23 @@ async function get_filled_survey_list_for_email(email) {
  * @param {number} survey_field_id
  * @returns {object} query results
  */
-async function create_filled_survey_for_survey_id(survey_id) {
+async function create_filled_survey_for_survey_id(survey_id, email) {
   let client = await pool.connect();
   try {
-    // create survey_fields table entry
+    if (email) {
+      let account_id = await client.query(
+        `SELECT id FROM accounts WHERE email = $1;`,
+        [email]
+      );
+      // create survey_fields table entry
+      return await client.query(
+        `INSERT INTO filled_surveys (survey_id, account_id)
+          VALUES ($1, $2)
+          RETURNING *;`,
+        [survey_id, account_id]
+      );
+    }
+
     return await client.query(
       `INSERT INTO filled_surveys (survey_id)
         VALUES ($1)

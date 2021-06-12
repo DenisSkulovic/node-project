@@ -37,11 +37,11 @@ router.get("/:surveyFieldID(\\d+)/", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
@@ -98,11 +98,11 @@ router.post("/create", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
@@ -129,11 +129,11 @@ router.put("/:surveyFieldID(\\d+)/update", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
@@ -156,11 +156,11 @@ router.delete("/:surveyFieldID(\\d+)/delete", async function (req, res, next) {
   let result = await delete_survey_field(req.params.surveyFieldID);
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 

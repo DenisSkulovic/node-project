@@ -22,11 +22,11 @@ router.get("/:filledFieldID(\\d+)/", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
@@ -41,11 +41,11 @@ router.get("/:filledSurveyID(\\d+)/", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
@@ -59,7 +59,7 @@ router.post("/create", async function (req, res, next) {
   let user = authenticateAccessToken(accessToken);
   console.log("user.isadmin", user.isadmin);
   if (!user || user.isadmin === false) {
-    res.status(status["unauthorized"]).end();
+    return res.status(status["unauthorized"]).end();
   }
 
   // query
@@ -70,11 +70,11 @@ router.post("/create", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
@@ -88,7 +88,7 @@ router.put("/:filledFieldID(\\d+)/update", async function (req, res, next) {
   let user = authenticateAccessToken(accessToken);
   console.log("user.isadmin", user.isadmin);
   if (!user || user.isadmin === false) {
-    res.status(status["unauthorized"]).end();
+    return res.status(status["unauthorized"]).end();
   }
 
   // query
@@ -100,11 +100,11 @@ router.put("/:filledFieldID(\\d+)/update", async function (req, res, next) {
   );
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
@@ -118,18 +118,18 @@ router.delete("/:filledFieldID(\\d+)/delete", async function (req, res, next) {
   let user = authenticateAccessToken(accessToken);
   console.log("user.isadmin", user.isadmin);
   if (!user || user.isadmin === false) {
-    res.status(status["unauthorized"]).end();
+    return res.status(status["unauthorized"]).end();
   }
 
   // query
   let result = await delete_filled_field(req.params.filledFieldID);
   if (result) {
     // response
-    res
+    return res
       .status(status["success"])
       .json([{ result: result, message: successMessage }]);
   } else {
-    res.status(status["notfound"]).end();
+    return res.status(status["notfound"]).end();
   }
 });
 
