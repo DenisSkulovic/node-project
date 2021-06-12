@@ -15,7 +15,7 @@ async function resetDatabase() {
     id SERIAL,
     email VARCHAR (255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    isadmin BOOLEAN NOT NULL ,
+    isadmin BOOLEAN NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
@@ -33,6 +33,7 @@ async function resetDatabase() {
     CREATE TABLE surveys(
     id SERIAL,
     title VARCHAR (255) NOT NULL,
+    public BOOLEAN NOT NULL,
     account_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,6 +43,7 @@ async function resetDatabase() {
       REFERENCES accounts(id)
       ON DELETE RESTRICT
     );
+    ALTER TABLE surveys ALTER COLUMN public SET DEFAULT false;
   
     CREATE TABLE survey_fields(
     id SERIAL,
@@ -64,12 +66,17 @@ async function resetDatabase() {
     CREATE TABLE filled_surveys (
     id SERIAL,
     survey_id BIGINT NOT NULL,
+    account_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id),
     CONSTRAINT fk_survey
       FOREIGN KEY(survey_id)
       REFERENCES surveys(id)
+      ON DELETE CASCADE,
+    CONSTRAINT fk_account
+      FOREIGN KEY(account_id)
+      REFERENCES accounts(id)
       ON DELETE CASCADE
     );
   
@@ -130,6 +137,16 @@ async function resetDatabase() {
     FOR EACH ROW
     EXECUTE PROCEDURE trigger_set_timestamp();
     `);
+
+    await client.query(
+      `
+    INSERT INTO field_types (name)
+    VALUES ("textarea"),
+          ("radio"),
+          ("input_text"),
+          ("input_number"),
+          ("input_checkbox");`
+    );
 
     return await client.query(
       `

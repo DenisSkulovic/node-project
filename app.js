@@ -1,10 +1,13 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 let createError = require("http-errors");
 let express = require("express");
 let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
 const session = require("express-session");
-const { secret } = require("./config.json");
+const secret = process.env.SECRET;
 
 let app = express();
 
@@ -36,22 +39,29 @@ app.get("/favicon.ico", (req, res) => res.status(204));
 //####################################################################
 // ROUTES
 let adminRouter = require("./api/admin");
-let accountRouter = require("./api/account");
 let authRouter = require("./api/auth");
-let fieldTypesRouter = require("./api/field_types");
-let filledFieldsRouter = require("./api/filled_fields");
-let filledSurveysRouter = require("./api/filled_surveys");
-let surveyFieldsRouter = require("./api/survey_fields");
-let surveysRouter = require("./api/surveys");
+let fieldTypesRouter = require("./api/generic_crud/field_types");
+let filledFieldsRouter = require("./api/generic_crud/filled_fields");
+let filledSurveysRouter = require("./api/generic_crud/filled_surveys");
+let surveyFieldsRouter = require("./api/generic_crud/survey_fields");
+let surveysRouter = require("./api/generic_crud/surveys");
 
 app.use("/admin", adminRouter);
-app.use("/account", accountRouter);
 app.use("/auth", authRouter);
 app.use("/field-types", fieldTypesRouter);
 app.use("/filled-fields", filledFieldsRouter);
 app.use("/filled-surveys", filledSurveysRouter);
 app.use("/survey-fields", surveyFieldsRouter);
 app.use("/surveys", surveysRouter);
+
+app.get("/", (req, res) =>
+  res.status(200).json([
+    {
+      message: "This is the Survey Project API. This specific url is not used.",
+    },
+  ])
+);
+
 //####################################################################
 
 // catch 404 and forward to error handler

@@ -2,13 +2,89 @@ const pool = require("./db");
 
 //
 // ###############################################################################
+/**
+ * isOwner_survey
+ * @param {number} survey_id
+ * @returns {boolean}
+ */
+async function isOwner_survey(survey_id, email) {
+  let client = await pool.connect();
+  try {
+    let result = await client.query(
+      `
+      SELECT a.email
+      FROM surveys s
+      LEFT JOIN accounts a
+      ON a.id = s.account_id
+      WHERE sf.id = $1;
+    `,
+      [survey_id]
+    );
+    if (result.rows[0]["email"] == email) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    return console.log("Query error: ", error);
+  } finally {
+    client.release();
+  }
+}
+
+//
+// ###############################################################################
+/**
+ * isPublic_survey
+ * @param {number} survey_id
+ * @returns {boolean}
+ */
+async function isPublic_survey(survey_id) {
+  let client = await pool.connect();
+  try {
+    let result = await client.query(
+      `
+      SELECT public
+      FROM surveys s
+      WHERE s.id = $1;
+    `,
+      [survey_id]
+    );
+    if (result.rows[0]["public"] === true) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    return console.log("Query error: ", error);
+  } finally {
+    client.release();
+  }
+}
+
+//
+// ###############################################################################
+/**
+ * get_survey_for_survey_id
+ * @param {string} survey_id
+ * @returns {object} query results
+ */
 async function get_survey_for_survey_id(survey_id) {
   let client = await pool.connect();
   try {
+    console.log(
+      "typeof",
+      typeof (await client.query(
+        `
+      SELECT * 
+      FROM surveys 
+      WHERE id = $1;
+    `,
+        [survey_id]
+      ))
+    );
     return await client.query(
       `
       SELECT * 
-      FROM survey 
+      FROM surveys 
       WHERE id = $1;
     `,
       [survey_id]
@@ -22,16 +98,36 @@ async function get_survey_for_survey_id(survey_id) {
 
 //
 // ###############################################################################
-async function get_survey_list_for_email(email) {
+/**
+ * get_survey_list_for_email__all
+ * @param {string} email
+ * @param {string} order_by
+ * @param {number} page
+ * @param {number} per_page
+ * @returns {object} query results
+ */
+async function get_survey_list_for_email__all(
+  email,
+  order_by = "title",
+  page = 1,
+  per_page = 10
+) {
   let client = await pool.connect();
   try {
+    page_num = parseInt(page);
+    per_page_num = parseInt(per_page);
+    let offset = page_num * per_page_num - per_page_num;
     return await client.query(
-      `SELECT *
-      FROM survey s
-      LEFT JOIN account a
+      `SELECT s.*
+      FROM surveys s
+      LEFT JOIN accounts a
       ON s.account_id = a.id
-      WHERE a.email = $1;`,
-      [email]
+      WHERE a.email = $1
+      ORDER BY $2
+      DESC
+      OFFSET $3
+      LIMIT $4;`,
+      [email, order_by, offset, per_page_num]
     );
   } catch (error) {
     return console.log("Query error: ", error);
@@ -42,6 +138,53 @@ async function get_survey_list_for_email(email) {
 
 //
 // ###############################################################################
+/**
+ * get_survey_list_for_email__public
+ * @param {string} email
+ * @param {string} order_by
+ * @param {number} page
+ * @param {number} per_page
+ * @returns {object} query results
+ */
+async function get_survey_list_for_email__public(
+  email,
+  order_by = "title",
+  page = 1,
+  per_page = 10
+) {
+  let client = await pool.connect();
+  try {
+    page_num = parseInt(page);
+    per_page_num = parseInt(per_page);
+    let offset = page_num * per_page_num - per_page_num;
+    return await client.query(
+      `SELECT s.*
+      FROM surveys s
+      LEFT JOIN accounts a
+      ON s.account_id = a.id
+      WHERE a.email = $1
+      AND s.public = true
+      ORDER BY $2
+      DESC
+      OFFSET $3
+      LIMIT $4;`,
+      [email, order_by, offset, per_page_num]
+    );
+  } catch (error) {
+    return console.log("Query error: ", error);
+  } finally {
+    client.release();
+  }
+}
+
+//
+// ###############################################################################
+/**
+ * create_survey_for_email
+ * @param {string} email
+ * @param {string} survey_title
+ * @returns {object} query results
+ */
 async function create_survey_for_email(email, survey_title) {
   let client = await pool.connect();
   try {
@@ -50,6 +193,8 @@ async function create_survey_for_email(email, survey_title) {
       `SELECT id FROM accounts WHERE email = $1;`,
       [email]
     );
+    account_id = account_id["rows"][0]["id"];
+    console.log("account_id", account_id);
 
     // create surveys table entry
     return await client.query(
@@ -67,15 +212,27 @@ async function create_survey_for_email(email, survey_title) {
 
 //
 // ###############################################################################
-async function update_survey_title_for_survey_id(survey_title, survey_id) {
+/**
+ * update_survey_title_for_survey_id
+ * @param {string} survey_title
+ * @param {bool} public
+ * @param {number} survey_id
+ * @returns {object} query results
+ */
+async function update_survey_for_survey_id(survey_title, public, survey_id) {
+  if (!survey_title || !public || !survey_id) {
+    return console.log("Not all data provided.");
+  }
+
   let client = await pool.connect();
   try {
     return await client.query(
       `UPDATE surveys
       SET title = $1
-      WHERE id = $2
+          public = $2
+      WHERE id = $3
       RETURNING id, title, account_id, created_at, modified_at;`,
-      [survey_title, survey_id]
+      [survey_title, public, survey_id]
     );
   } catch (error) {
     return console.log("Query error: ", error);
@@ -86,6 +243,11 @@ async function update_survey_title_for_survey_id(survey_title, survey_id) {
 
 //
 // ###############################################################################
+/**
+ * delete_survey_by_survey_id
+ * @param {number} survey_id
+ * @returns {object} query results
+ */
 async function delete_survey_by_survey_id(survey_id) {
   let client = await pool.connect();
   try {
@@ -109,9 +271,12 @@ async function delete_survey_by_survey_id(survey_id) {
 }
 
 module.exports = {
+  isPublic_survey,
+  isOwner_survey,
   get_survey_for_survey_id,
-  get_survey_list_for_email,
+  get_survey_list_for_email__all,
+  get_survey_list_for_email__public,
   create_survey_for_email,
-  update_survey_title_for_survey_id,
+  update_survey_for_survey_id,
   delete_survey_by_survey_id,
 };

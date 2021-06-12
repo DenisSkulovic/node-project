@@ -1,41 +1,169 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcrypt");
-const saltRounds = 12;
+const jwt = require("jsonwebtoken");
 const {
-  getDataForLogin,
+  authenticateAccessToken,
+  authenticateRefreshToken,
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../utils/auth");
+const { successMessage, errorMessage, status } = require("../utils/status");
+const {
+  getUserPasswordAndAdminStatus,
   register,
   change_password,
 } = require("../database/auth");
 
-router.post("/login", async function (req, res, next) {
-  const { username, password } = req.body;
-  if (username && password) {
+// https://stackabuse.com/authentication-and-authorization-with-jwts-in-express-js
+// has to be a let to apply a filter function; of course it's possible to do it differently and have a const
+let refreshTokens = [];
+
+//
+//
+router.post("/refreshtoken", async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(status["unauthorized"]).end();
   }
-  // let session = req.session;
-  // session.email = req.body.email
+  if (!refreshTokens.includes(refreshToken)) {
+    return res.status(status["forbidden"]).end();
+  }
 
-  let result = await getDataForLogin(req.body.email);
-  console.log("result", result);
-  res.json([{ result: result }]);
+  let user = authenticateRefreshToken(refreshToken);
+  if (!user) {
+    return res.status(status["forbidden"]).end();
+  }
+
+  let result = await getUserPasswordAndAdminStatus(user.email);
+  let isadmin = result.rows[0]["isadmin"];
+
+  const accessToken = generateAccessToken({
+    email: user.email,
+    isadmin: isadmin,
+  });
+
+  return res.status(status["success"]).json({
+    accessToken,
+  });
 });
 
+//
+//
+router.post("/login", async function (req, res, next) {
+  try {
+    const { email, password } = req.body;
+    if (email && password) {
+      let result = await getUserPasswordAndAdminStatus(req.body.email);
+      if (`${password}` !== `${result.rows[0]["password"]}`) {
+        return res.status(status["error"]).end();
+      }
+      let isadmin = result.rows[0]["isadmin"];
+
+      const accessToken = generateAccessToken({
+        email: email,
+        isadmin: isadmin,
+      });
+      const refreshToken = generateRefreshToken({
+        email: email,
+        isadmin: isadmin,
+      });
+      refreshTokens.push(refreshToken);
+
+      return res.status(status["success"]).json([
+        {
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          message: successMessage,
+        },
+      ]);
+    } else {
+      return res.status(status["notfound"]).end();
+    }
+  } catch {
+    return res.status(status["error"]).end();
+  }
+});
+
+//
+//
 router.post("/register", async function (req, res, next) {
-  // add express-session logic here later
-  let result = await register(req.body.email, req.body.password);
-  res.json([{ result: result }]);
+  try {
+    const { email, password } = req.body;
+    let isadmin = false;
+
+    if (email && password) {
+      let result = await register(req.body.email, req.body.password, isadmin);
+      if (!result) {
+        return res.status(status["error"]).end();
+      }
+
+      const accessToken = generateAccessToken({
+        email: email,
+        isadmin: isadmin,
+      });
+      const refreshToken = generateRefreshToken({
+        email: email,
+        isadmin: isadmin,
+      });
+
+      refreshTokens.push(refreshToken);
+
+      return res.status(status["success"]).json([
+        {
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          message: successMessage,
+        },
+      ]);
+    } else {
+      return res.status(status["notfound"]).end();
+    }
+  } catch {
+    return res.status(status["error"]).end();
+  }
 });
 
+//
+//
 router.post("/logout", async function (req, res, next) {
-  // see if express-session handles cookie deletion, if not - find out what it does exactly
-  let result = req.session.destroy();
-  res.json([{ result: result }]);
+  const { refreshToken } = req.body;
+  refreshTokens = refreshTokens.filter((t) => t !== refreshToken);
+  res.status(status["success"]).json([{ message: successMessage }]);
 });
 
+//
+//
 router.post("/change-password", async function (req, res, next) {
-  // add some permissions logic here later
-  let result = await change_password(req.body.email, req.body.password);
-  res.json([{ result: result }]);
+  const { email, password, newPassword } = req.body;
+  const accessToken = req.header("AccessToken");
+
+  // verify token
+  try {
+    let user = authenticateAccessToken(accessToken);
+    if (!user) {
+      return res.status(status["forbidden"]);
+    }
+    // verify entered email & password
+    if (email && password) {
+      let userData = await getUserPasswordAndAdminStatus(email);
+      if (
+        `${password}` !== `${userData.rows[0]["password"]}` ||
+        `${user.email}` !== `${email}`
+      ) {
+        return res.status(status["unauthorized"]).end();
+      }
+
+      let result = await change_password(email, newPassword);
+
+      return res
+        .status(status["success"])
+        .json([{ result: result, message: successMessage }]);
+    } else {
+      return res.status(status["notfound"]).end();
+    }
+  } catch {
+    return res.status(status["error"]).end();
+  }
 });
 
 module.exports = router;

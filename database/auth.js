@@ -1,10 +1,10 @@
 const pool = require("./db");
 
-async function getDataForLogin(email) {
+async function getUserPasswordAndAdminStatus(email) {
   let client = await pool.connect();
   try {
     return await client.query(
-      `SELECT email, password FROM accounts WHERE email = $1`,
+      `SELECT password, isadmin FROM accounts WHERE email = $1`,
       [email]
     );
   } catch (error) {
@@ -40,7 +40,7 @@ async function change_password(email, password) {
     UPDATE accounts
       SET password = $1
       WHERE email = $2
-      RETURNING *;
+      RETURNING email, isadmin;
     `,
       [password, email]
     );
@@ -52,7 +52,7 @@ async function change_password(email, password) {
 }
 
 module.exports = {
-  getDataForLogin,
+  getUserPasswordAndAdminStatus,
   register,
   change_password,
 };
