@@ -94,17 +94,17 @@ async function get_survey_field_for_survey_field_id(survey_field_id) {
  */
 async function get_survey_fields_list_for_survey_id__all(
   survey_id,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
   return await performQuery(
-    `SELECT *
+    `SELECT sf.*
     FROM survey_fields sf
     LEFT JOIN survey s
     ON s.id = sf.survey_id
     WHERE s.id = $1
-    ORDER BY $2
+    ORDER BY sf.$2
     DESC
     OFFSET $3
     LIMIT $4;`,
@@ -127,18 +127,18 @@ async function get_survey_fields_list_for_survey_id__all(
  */
 async function get_survey_fields_list_for_survey_id__public(
   survey_id,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
   return await performQuery(
-    `SELECT *
+    `SELECT sf.*
     FROM survey_fields sf
     LEFT JOIN survey s
     ON s.id = sf.survey_id
     WHERE s.id = $1
     AND s.public = true
-    ORDER BY $2
+    ORDER BY sf.$2
     DESC
     OFFSET $3
     LIMIT $4;`,

@@ -164,7 +164,7 @@ async function get_survey_for_survey_id__owner(survey_id, email) {
  */
 async function get_survey_list_for_email__all(
   email,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
@@ -177,7 +177,7 @@ async function get_survey_list_for_email__all(
     LEFT JOIN accounts a
     ON s.account_id = a.id
     WHERE a.email = $1
-    ORDER BY $2
+    ORDER BY s.$2
     DESC
     OFFSET $3
     LIMIT $4;`,
@@ -200,7 +200,7 @@ async function get_survey_list_for_email__all(
  */
 async function get_survey_list_for_email__public_or_owner(
   email,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
@@ -214,7 +214,7 @@ async function get_survey_list_for_email__public_or_owner(
     ON s.account_id = a.id
     WHERE a.email = $1
     OR s.public = true
-    ORDER BY $2
+    ORDER BY s.$2
     DESC
     OFFSET $3
     LIMIT $4;`,
@@ -237,7 +237,7 @@ async function get_survey_list_for_email__public_or_owner(
  */
 async function get_survey_list_for_email__owner(
   email,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
@@ -250,7 +250,7 @@ async function get_survey_list_for_email__owner(
     LEFT JOIN accounts a
     ON s.account_id = a.id
     WHERE a.email = $1
-    ORDER BY $2
+    ORDER BY s.$2
     DESC
     OFFSET $3
     LIMIT $4;`,
@@ -269,11 +269,7 @@ async function get_survey_list_for_email__owner(
  * @param {number} per_page
  * @returns {object} query result
  */
-async function get_survey_list__all(
-  order_by = "title",
-  page = 1,
-  per_page = 10
-) {
+async function get_survey_list__all(order_by = "id", page = 1, per_page = 10) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -303,7 +299,7 @@ async function get_survey_list__all(
  */
 async function get_survey_list__public_or_owner(
   email,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
@@ -317,7 +313,7 @@ async function get_survey_list__public_or_owner(
     ON s.account_id = a.id
     WHERE a.email = $1
     OR s.public = true
-    ORDER BY $2
+    ORDER BY s.$2
     DESC
     OFFSET $3
     LIMIT $4;`,
@@ -340,7 +336,7 @@ async function get_survey_list__public_or_owner(
  */
 async function get_survey_list__owner(
   email,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
@@ -353,7 +349,7 @@ async function get_survey_list__owner(
     LEFT JOIN accounts a
     ON s.account_id = a.id
     WHERE a.email = $1
-    ORDER BY $2
+    ORDER BY s.$2
     DESC
     OFFSET $3
     LIMIT $4;`,
@@ -374,7 +370,7 @@ async function get_survey_list__owner(
  * @returns {object} query result
  */
 async function get_survey_list__public(
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
@@ -387,7 +383,7 @@ async function get_survey_list__public(
     LEFT JOIN accounts a
     ON s.account_id = a.id
     WHERE s.public = true
-    ORDER BY $1
+    ORDER BY s.$1
     DESC
     OFFSET $2
     LIMIT $3;`,
@@ -410,7 +406,7 @@ async function get_survey_list__public(
  */
 async function get_survey_list_for_email__public(
   email,
-  order_by = "title",
+  order_by = "id",
   page = 1,
   per_page = 10
 ) {
@@ -424,7 +420,7 @@ async function get_survey_list_for_email__public(
     ON s.account_id = a.id
     WHERE a.email = $1
     AND s.public = true
-    ORDER BY $2
+    ORDER BY s.$2
     DESC
     OFFSET $3
     LIMIT $4;`,

@@ -63,7 +63,10 @@ router.get("/survey/:filledSurveyID(\\d+)/", async function (req, res) {
     user.isadmin
   ) {
     result = await get_filled_fields_list_for_filled_survey_id(
-      req.params.filledFieldID
+      req.params.filledFieldID,
+      req.query.order_by,
+      req.query.page,
+      req.query.per_page
     );
   }
 

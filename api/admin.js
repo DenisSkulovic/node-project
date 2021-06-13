@@ -6,9 +6,14 @@ const { successMessage, errorMessage, status } = require("../utils/status");
 //
 //
 router.get("/reset-database", async function (req, res) {
-  // check for admin status here, later
+  let user = authenticateAccessToken(req);
+
+  if (!user.isadmin) {
+    return res.status(status["forbidden"]).end();
+  }
+
   let result = await resetDatabase();
-  res
+  return res
     .status(status["success"])
     .json([{ result: result, message: successMessage }]);
 });

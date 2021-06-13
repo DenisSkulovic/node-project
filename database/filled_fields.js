@@ -124,16 +124,31 @@ async function get_filled_field_for_filled_field_id(filled_field_id) {
 /**
  *
  * @param {number} filled_survey_id
+ * @param {string} order_by
+ * @param {number} page
+ * @param {number} per_page
  * @returns {object} query result
  */
-async function get_filled_fields_list_for_filled_survey_id(filled_survey_id) {
+async function get_filled_fields_list_for_filled_survey_id(
+  filled_survey_id,
+  order_by = "id",
+  page = 1,
+  per_page = 10
+) {
+  let page_num = parseInt(page);
+  let per_page_num = parseInt(per_page);
+  let offset = page_num * per_page_num - per_page_num;
   return await performQuery(
-    `SELECT *
+    `SELECT ff.*
     FROM filled_fields ff
     LEFT JOIN filled_surveys fs
     ON ff.filled_survey_id = fs.id
-    WHERE fs.id = $1;`,
-    [filled_survey_id]
+    WHERE fs.id = $1
+    ORDER BY ff.$2
+    DESC
+    OFFSET $3
+    LIMIT $4;`,
+    [filled_survey_id, order_by, offset, per_page_num]
   );
 }
 

@@ -87,82 +87,78 @@ router.post("/login", async function (req, res) {
 //
 //
 router.post("/register", async function (req, res) {
-  try {
-    const { email, password } = req.body;
-    let isadmin = false;
+  let user = authenticateAccessToken(req);
 
-    if (email && password) {
-      let result = await register(req.body.email, req.body.password, isadmin);
-      if (!result) {
-        return res.status(status["error"]).end();
-      }
+  if (!req.body.email || !req.body.password) {
+    return res.status(status["bad"]).end();
+  }
 
-      const accessToken = generateAccessToken({
-        email: email,
-        isadmin: isadmin,
-      });
-      const refreshToken = generateRefreshToken({
-        email: email,
-        isadmin: isadmin,
-      });
+  let result = await register(
+    req.body.email,
+    req.body.password,
+    user.isadmin && req.body.isadmin ? req.body.isadmin : false
+  );
 
-      refreshTokens.push(refreshToken);
-
-      return res.status(status["success"]).json([
-        {
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          message: successMessage,
-        },
-      ]);
-    } else {
-      return res.status(status["notfound"]).end();
-    }
-  } catch {
+  if (!result) {
     return res.status(status["error"]).end();
   }
+
+  const accessToken = generateAccessToken({
+    email: req.body.email,
+    isadmin: user.isadmin && req.body.isadmin ? req.body.isadmin : false,
+  });
+  const refreshToken = generateRefreshToken({
+    email: req.body.email,
+    isadmin: user.isadmin && req.body.isadmin ? req.body.isadmin : false,
+  });
+  refreshTokens.push(refreshToken);
+
+  return res.status(status["success"]).json([
+    {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      message: successMessage,
+    },
+  ]);
 });
 
 //
 //
 router.post("/logout", async function (req, res) {
-  const { refreshToken } = req.body;
-  refreshTokens = refreshTokens.filter((t) => t !== refreshToken);
-  res.status(status["success"]).json([{ message: successMessage }]);
+  // better to move this refresh tokens list into the database (later)
+  refreshTokens = refreshTokens.filter((t) => t !== req.body.refreshToken);
+  return res.status(status["success"]).json([{ message: successMessage }]);
 });
 
 //
 //
 router.post("/change-password", async function (req, res) {
-  const { email, password, newPassword } = req.body;
-
-  // verify token
-  try {
-    let user = authenticateAccessToken(req);
-    if (!user) {
-      return res.status(status["forbidden"]);
-    }
-    // verify entered email & password
-    if (email && password) {
-      let userData = await getUserPasswordAndAdminStatus(email);
-      if (
-        `${password}` !== `${userData.rows[0]["password"]}` ||
-        `${user.email}` !== `${email}`
-      ) {
-        return res.status(status["unauthorized"]).end();
-      }
-
-      let result = await change_password(email, newPassword);
-
-      return res
-        .status(status["success"])
-        .json([{ result: result, message: successMessage }]);
-    } else {
-      return res.status(status["notfound"]).end();
-    }
-  } catch {
-    return res.status(status["error"]).end();
+  let user = authenticateAccessToken(req);
+  if (!user.email) {
+    return res.status(status["unauthorized"].end());
   }
+  if (!req.body.email || !req.body.password) {
+    return res.status(status["bad"]).end();
+  }
+
+  // verify entered email & password
+  let userData = await getUserPasswordAndAdminStatus(req.body.email);
+  if (
+    !user.isadmin &&
+    (`${req.body.password}` !== `${userData.rows[0]["password"]}` ||
+      `${user.email}` !== `${req.body.email}`)
+  ) {
+    return res.status(status["unauthorized"]).end();
+  }
+
+  let result = await change_password(
+    user.isadmin ? req.body.email : user.email,
+    req.body.newPassword
+  );
+
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 module.exports = router;
