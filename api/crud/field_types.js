@@ -2,24 +2,20 @@ const express = require("express");
 const router = express.Router();
 const { successMessage, errorMessage, status } = require("../../utils/status");
 const {
-  isPublic_filled_field,
-  isOwner_filled_field,
-  get_filled_field_for_filled_field_id,
-  get_filled_fields_list_for_filled_survey_id,
-  create_filled_field,
-  update_filled_field,
-  delete_filled_field,
-} = require("../../database/filled_fields");
+  get_field_type_for_field_type_id,
+  get_field_types_list,
+  create_field_type,
+  update_field_type,
+  delete_field_type,
+} = require("../../database/field_types");
 
 // ########################################################################################
 //
 // PUBLIC
 //
-router.get("/:filledFieldID(\\d+)/", async function (req, res, next) {
+router.get("/:fieldTypeID(\\d+)/", async function (req, res) {
   // query
-  let result = await get_filled_field_for_filled_field_id(
-    req.params.filledFieldID
-  );
+  let result = await get_field_type_for_field_type_id(req.params.fieldTypeID);
   if (result) {
     // response
     return res
@@ -34,11 +30,9 @@ router.get("/:filledFieldID(\\d+)/", async function (req, res, next) {
 //
 // PUBLIC
 //
-router.get("/:filledSurveyID(\\d+)/", async function (req, res, next) {
+router.get("/all", async function (req, res) {
   // query
-  let result = await get_filled_fields_list_for_filled_survey_id(
-    req.params.filledSurveyID
-  );
+  let result = await get_field_types_list();
   if (result) {
     // response
     return res
@@ -53,21 +47,14 @@ router.get("/:filledSurveyID(\\d+)/", async function (req, res, next) {
 //
 // ADMIN
 //
-router.post("/create", async function (req, res, next) {
-  // auth
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
-  console.log("user.isadmin", user.isadmin);
-  if (!user || user.isadmin === false) {
+router.post("/create", async function (req, res) {
+  let user = authenticateAccessToken(req);
+  if (!user.isadmin) {
     return res.status(status["unauthorized"]).end();
   }
 
   // query
-  let result = await create_filled_field(
-    req.body.survey_field_id,
-    req.body.filled_survey_id,
-    req.body.answer
-  );
+  let result = await create_field_type(req.body.name);
   if (result) {
     // response
     return res
@@ -82,22 +69,14 @@ router.post("/create", async function (req, res, next) {
 //
 // ADMIN
 //
-router.put("/:filledFieldID(\\d+)/update", async function (req, res, next) {
-  // auth
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
-  console.log("user.isadmin", user.isadmin);
-  if (!user || user.isadmin === false) {
+router.put("/:fieldTypeID(\\d+)/update", async function (req, res) {
+  let user = authenticateAccessToken(req);
+  if (!user.isadmin) {
     return res.status(status["unauthorized"]).end();
   }
 
   // query
-  let result = await update_filled_field(
-    req.body.survey_field_id,
-    req.body.filled_survey_id,
-    req.body.answer,
-    req.params.filledFieldID
-  );
+  let result = await update_field_type(req.body.name, req.params.fieldTypeID);
   if (result) {
     // response
     return res
@@ -112,17 +91,14 @@ router.put("/:filledFieldID(\\d+)/update", async function (req, res, next) {
 //
 // ADMIN
 //
-router.delete("/:filledFieldID(\\d+)/delete", async function (req, res, next) {
-  // auth
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
-  console.log("user.isadmin", user.isadmin);
-  if (!user || user.isadmin === false) {
+router.delete("/:fieldTypeID(\\d+)/delete", async function (req, res) {
+  let user = authenticateAccessToken(req);
+  if (!user.isadmin) {
     return res.status(status["unauthorized"]).end();
   }
 
   // query
-  let result = await delete_filled_field(req.params.filledFieldID);
+  let result = await delete_field_type(req.params.fieldTypeID);
   if (result) {
     // response
     return res

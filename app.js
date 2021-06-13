@@ -1,37 +1,45 @@
+// env
 const dotenv = require("dotenv");
 dotenv.config();
 
+// package imports
 let createError = require("http-errors");
 let express = require("express");
 let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
-const session = require("express-session");
+// const session = require("express-session");
+var cors = require("cors");
 const secret = process.env.SECRET;
 
 let app = express();
 
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
+//####################################################################
+// CORS
+var allowedOrigins = ["http://localhost", "http://127.0.0.1"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin
+      // (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        var msg =
+          "The CORS policy for this site does not " +
+          "allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+  })
+);
+//####################################################################
 
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "static")));
-app.use(
-  session({
-    secret: secret,
-    resave: true,
-    saveUninitialized: true,
-    rolling: true,
-    cookie: {
-      httpOnly: false,
-      maxAge: 1 * 60 * 60 * 1000,
-    },
-  })
-);
 
 // catch the annoying useless favicon.ico request (because this is an API, no HTML is served)
 app.get("/favicon.ico", (req, res) => res.status(204));
@@ -40,11 +48,11 @@ app.get("/favicon.ico", (req, res) => res.status(204));
 // ROUTES
 let adminRouter = require("./api/admin");
 let authRouter = require("./api/auth");
-let fieldTypesRouter = require("./api/generic_crud/field_types");
-let filledFieldsRouter = require("./api/generic_crud/filled_fields");
-let filledSurveysRouter = require("./api/generic_crud/filled_surveys");
-let surveyFieldsRouter = require("./api/generic_crud/survey_fields");
-let surveysRouter = require("./api/generic_crud/surveys");
+let fieldTypesRouter = require("./api/crud/field_types");
+let filledFieldsRouter = require("./api/crud/filled_fields");
+let filledSurveysRouter = require("./api/crud/filled_surveys");
+let surveyFieldsRouter = require("./api/crud/survey_fields");
+let surveysRouter = require("./api/crud/surveys");
 
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
@@ -54,6 +62,7 @@ app.use("/filled-surveys", filledSurveysRouter);
 app.use("/survey-fields", surveyFieldsRouter);
 app.use("/surveys", surveysRouter);
 
+// empty home page
 app.get("/", (req, res) =>
   res.status(200).json([
     {
@@ -65,12 +74,12 @@ app.get("/", (req, res) =>
 //####################################################################
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use(function (req, res) {
   next(createError(404));
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};

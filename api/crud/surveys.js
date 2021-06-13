@@ -2,16 +2,20 @@ const express = require("express");
 const router = express.Router();
 const { successMessage, errorMessage, status } = require("../../utils/status");
 const {
-  isPublic_survey,
   isOwner_survey,
+  isPublic_survey,
+  get_survey_for_survey_id__all,
   get_survey_for_survey_id__public,
   get_survey_for_survey_id__public_or_owner,
-  get_survey_for_survey_id__all,
+  get_survey_for_survey_id__owner,
   get_survey_list_for_email__all,
   get_survey_list_for_email__public,
+  get_survey_list_for_email__public_or_owner,
+  get_survey_list_for_email__owner,
   get_survey_list__all,
-  get_survey_list__public_or_owner,
   get_survey_list__public,
+  get_survey_list__public_or_owner,
+  get_survey_list__owner,
   create_survey_for_email,
   update_survey_for_survey_id,
   delete_survey_by_survey_id,
@@ -21,27 +25,11 @@ const {
 //
 //
 // ########################################################################################
-//
-// PUBLIC if anon, PUBLIC + OWN if auth, or all if ADMIN
-//
-router.get("/:surveyID(\\d+)", async function (req, res, next) {
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
-
-  let result;
-  // if anonymous
-  if (!user.email) {
-    result = await get_survey_for_survey_id__public(req.params.surveyID);
-    // if authenticated, but not admin
-  } else if (!user.isadmin) {
-    result = await get_survey_for_survey_id__public_or_owner(
-      req.params.surveyID,
-      user.email
-    );
-    // if admin
-  } else {
-    result = await get_survey_for_survey_id__all(req.params.surveyID);
-  }
+/**
+ * PUBLIC
+ */
+router.get("/:surveyID(\\d+)", async function (req, res) {
+  let result = await get_survey_for_survey_id__all(req.query.surveyID);
 
   if (result) {
     //response
@@ -57,36 +45,35 @@ router.get("/:surveyID(\\d+)", async function (req, res, next) {
 //
 //
 // ########################################################################################
-//
-// PUBLIC if anon, PUBLIC + OWN if auth, or all if ADMIN
-//
-router.get("/all", async function (req, res, next) {
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
+/**
+ * PUBLIC
+ */
+router.get("/all", async function (req, res) {
+  let user = authenticateAccessToken(req);
 
   let result;
-  // if anonymous
-  if (!user.email) {
-    result = await get_survey_list__public(
-      req.query.order_by,
-      req.query.page,
-      req.query.per_page
-    );
-    // if authenticated, but not admin
-  } else if (!user.isadmin) {
-    result = await get_survey_list__public_or_owner(
-      user.email,
-      req.query.order_by,
-      req.query.page,
-      req.query.per_page
-    );
-    // if admin
-  } else {
-    result = await get_survey_list__all(
-      req.query.order_by,
-      req.query.page,
-      req.query.per_page
-    );
+  switch (req.query.type) {
+    case "owner":
+      if (user.email) {
+        result = await get_survey_list__owner(
+          user.email,
+          req.query.order_by,
+          req.query.page,
+          req.query.per_page
+        );
+      }
+    case "public":
+      result = await get_survey_list__public(
+        req.query.order_by,
+        req.query.page,
+        req.query.per_page
+      );
+    default:
+      result = await get_survey_list__all(
+        req.query.order_by,
+        req.query.page,
+        req.query.per_page
+      );
   }
 
   // response
@@ -103,27 +90,24 @@ router.get("/all", async function (req, res, next) {
 //
 //
 // ########################################################################################
-//
-// result depends: PUBLIC, OWNER or ADMIN
-//
-router.get("/for-email", async function (req, res, next) {
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
-  let requestedEmail = req.query.email;
+/**
+ * PUBLIC
+ */
+router.get("/for-email/", async function (req, res) {
+  if (!req.query.email) {
+    return res.status(status["bad"]).end();
+  }
 
   let result;
-  // if user is allowed to access only public surveys
-  if (user.email !== requestedEmail || !user.isadmin) {
+
+  if (req.query.type === "public") {
     result = await get_survey_list_for_email__public(
       req.query.email,
       req.query.order_by,
       req.query.page,
       req.query.per_page
     );
-  }
-
-  // if user is admin or requests own surveys
-  if (user.isadmin || user.email === requestedEmail) {
+  } else {
     result = await get_survey_list_for_email__all(
       req.query.email,
       req.query.order_by,
@@ -146,13 +130,11 @@ router.get("/for-email", async function (req, res, next) {
 //
 //
 // ########################################################################################
-//
-// ADMIN or AUTHENTICATED
-//
-router.post("/create", async function (req, res, next) {
-  // auth
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
+/**
+ * ADMIN or AUTHENTICATED
+ */
+router.post("/create", async function (req, res) {
+  let user = authenticateAccessToken(req);
   if (!user.email) {
     return res.status(status["unauthorized"]).end();
   }
@@ -181,15 +163,20 @@ router.post("/create", async function (req, res, next) {
 //
 //
 // ########################################################################################
-//
-// ADMIN or OWNER
-//
-router.put("/:surveyID(\\d+)/update", async function (req, res, next) {
-  // auth
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
+/**
+ * ADMIN or OWNER
+ */
+router.put("/:surveyID(\\d+)/update", async function (req, res) {
+  let user = authenticateAccessToken(req);
+
+  // only allow owners or admins to update
   if (!isOwner_survey(req.params.surveyID, user.email) || !user.isadmin) {
     return res.status(status["unauthorized"]).end();
+  }
+
+  // prevent attempt to change survey from private to public
+  if (req.body.public === true && !isPublic_survey(req.params.surveyID)) {
+    return res.status(status["forbidden"]).end();
   }
 
   // query
@@ -198,6 +185,7 @@ router.put("/:surveyID(\\d+)/update", async function (req, res, next) {
     req.body.public,
     req.params.surveyID
   );
+
   if (result) {
     // response
     return res
@@ -212,13 +200,12 @@ router.put("/:surveyID(\\d+)/update", async function (req, res, next) {
 //
 //
 // ########################################################################################
-//
-// ADMIN or OWNER
-//
-router.delete("/:surveyID(\\d+)/delete", async function (req, res, next) {
-  // auth
-  const accessToken = req.header("AccessToken");
-  let user = authenticateAccessToken(accessToken);
+/**
+ * ADMIN or OWNER
+ */
+router.delete("/:surveyID(\\d+)/delete", async function (req, res) {
+  let user = authenticateAccessToken(req);
+
   if (!isOwner_survey(req.params.surveyID, user.email) || !user.isadmin) {
     return res.status(status["unauthorized"]).end();
   }

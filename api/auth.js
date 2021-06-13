@@ -49,7 +49,7 @@ router.post("/refreshtoken", async (req, res) => {
 
 //
 //
-router.post("/login", async function (req, res, next) {
+router.post("/login", async function (req, res) {
   try {
     const { email, password } = req.body;
     if (email && password) {
@@ -86,7 +86,7 @@ router.post("/login", async function (req, res, next) {
 
 //
 //
-router.post("/register", async function (req, res, next) {
+router.post("/register", async function (req, res) {
   try {
     const { email, password } = req.body;
     let isadmin = false;
@@ -125,7 +125,7 @@ router.post("/register", async function (req, res, next) {
 
 //
 //
-router.post("/logout", async function (req, res, next) {
+router.post("/logout", async function (req, res) {
   const { refreshToken } = req.body;
   refreshTokens = refreshTokens.filter((t) => t !== refreshToken);
   res.status(status["success"]).json([{ message: successMessage }]);
@@ -133,13 +133,12 @@ router.post("/logout", async function (req, res, next) {
 
 //
 //
-router.post("/change-password", async function (req, res, next) {
+router.post("/change-password", async function (req, res) {
   const { email, password, newPassword } = req.body;
-  const accessToken = req.header("AccessToken");
 
   // verify token
   try {
-    let user = authenticateAccessToken(accessToken);
+    let user = authenticateAccessToken(req);
     if (!user) {
       return res.status(status["forbidden"]);
     }

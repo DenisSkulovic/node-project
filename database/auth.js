@@ -1,54 +1,51 @@
-const pool = require("./db");
+const { performQuery } = require("./db");
 
+/**
+ * Retrieve user password and admin status.
+ * @param {string} email
+ * @returns {object} query result
+ */
 async function getUserPasswordAndAdminStatus(email) {
-  let client = await pool.connect();
-  try {
-    return await client.query(
-      `SELECT password, isadmin FROM accounts WHERE email = $1`,
-      [email]
-    );
-  } catch (error) {
-    return console.log("Query error: ", error);
-  } finally {
-    client.release();
-  }
+  return await performQuery(
+    `SELECT password, isadmin FROM accounts WHERE email = $1`,
+    [email]
+  );
 }
 
+/**
+ * Insert new user into "accounts" table.
+ * @param {string} email
+ * @param {string | number} password
+ * @param {boolean} is_admin
+ * @returns {object} query result
+ */
 async function register(email, password, is_admin = false) {
-  let client = await pool.connect();
-  try {
-    return await client.query(
-      `
+  return await performQuery(
+    `
     INSERT INTO accounts (email, password, isadmin)
         VALUES ($1, $2, $3)
         RETURNING email, isadmin;
     `,
-      [email, password, is_admin]
-    );
-  } catch (error) {
-    return console.log("Query error: ", error);
-  } finally {
-    client.release();
-  }
+    [email, password, is_admin]
+  );
 }
 
+/**
+ * Change password for user in "accounts" table
+ * @param {string} email
+ * @param {string | number} password
+ * @returns {object} query result
+ */
 async function change_password(email, password) {
-  let client = await pool.connect();
-  try {
-    return await client.query(
-      `
+  return await performQuery(
+    `
     UPDATE accounts
       SET password = $1
       WHERE email = $2
       RETURNING email, isadmin;
     `,
-      [password, email]
-    );
-  } catch (error) {
-    return console.log("Query error: ", error);
-  } finally {
-    client.release();
-  }
+    [password, email]
+  );
 }
 
 module.exports = {
