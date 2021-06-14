@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const resetDatabase = require("../database/db_reset");
 const { authenticateAccessToken } = require("../utils/auth");
-const { successMessage, errorMessage, status } = require("../utils/status");
+const { getSuccessMessage, errorMessage, status } = require("../utils/status");
 
 //
 //
@@ -16,7 +16,7 @@ router.get("/reset-database", async function (req, res) {
   let result = await resetDatabase();
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 module.exports = router;

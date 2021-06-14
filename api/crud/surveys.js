@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { successMessage, errorMessage, status } = require("../../utils/status");
+const {
+  getSuccessMessage,
+  errorMessage,
+  status,
+} = require("../../utils/status");
 const {
   isOwner_survey,
   isPublic_survey,
@@ -30,11 +34,12 @@ const { authenticateAccessToken } = require("../../utils/auth");
  * PUBLIC
  */
 router.get("/:surveyID(\\d+)", async function (req, res) {
-  let result = await get_survey_for_survey_id__all(req.query.surveyID);
+  let user = authenticateAccessToken(req);
+  let result = await get_survey_for_survey_id__all(req.params.surveyID);
 
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -79,7 +84,7 @@ router.get("/all", async function (req, res) {
 
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -89,7 +94,8 @@ router.get("/all", async function (req, res) {
 /**
  * PUBLIC
  */
-router.get("/for-email/", async function (req, res) {
+router.get("/for-email", async function (req, res) {
+  let user = authenticateAccessToken(req);
   if (!req.query.email) {
     return res.status(status["bad"]).end();
   }
@@ -116,7 +122,7 @@ router.get("/for-email/", async function (req, res) {
 
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -141,10 +147,9 @@ router.post("/create", async function (req, res) {
   } else {
     result = await create_survey_for_email(user.email, req.body.title);
   }
-
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -175,8 +180,8 @@ router.put("/:surveyID(\\d+)/update", async function (req, res) {
   );
 
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -196,8 +201,8 @@ router.delete("/:surveyID(\\d+)/delete", async function (req, res) {
   // query
   let result = await delete_survey_by_survey_id(req.params.surveyID);
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 module.exports = router;

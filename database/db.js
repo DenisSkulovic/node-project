@@ -12,6 +12,10 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
+//
+//
+//
+//
 // #################################################################################
 /**
  * Perform Postgres Query.
@@ -32,4 +36,9 @@ async function performQuery(query, kwargs) {
   }
 }
 
+//
+//
+//
+//
+// #################################################################################
 module.exports = { pool, performQuery };

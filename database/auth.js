@@ -1,5 +1,10 @@
 const { performQuery } = require("./db");
 
+//
+//
+//
+//
+// ###############################################################################
 /**
  * Retrieve user password and admin status.
  * @param {string} email
@@ -12,6 +17,11 @@ async function getUserPasswordAndAdminStatus(email) {
   );
 }
 
+//
+//
+//
+//
+// ###############################################################################
 /**
  * Insert new user into "accounts" table.
  * @param {string} email
@@ -30,6 +40,11 @@ async function register(email, password, is_admin = false) {
   );
 }
 
+//
+//
+//
+//
+// ###############################################################################
 /**
  * Change password for user in "accounts" table
  * @param {string} email
@@ -48,6 +63,11 @@ async function change_password(email, password) {
   );
 }
 
+//
+//
+//
+//
+// ###############################################################################
 module.exports = {
   getUserPasswordAndAdminStatus,
   register,

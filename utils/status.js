@@ -1,5 +1,32 @@
-const successMessage = { status: "success" };
+/**
+ * Get success message for response, containing user authentication status.
+ * @param {object} user
+ * @returns {object}
+ */
+function getSuccessMessage(user) {
+  if (!user) {
+    return {
+      status: "success",
+      isAuthenticated: false,
+      isAdmin: false,
+    };
+  }
+  if (!user.isadmin) {
+    return {
+      status: "success",
+      isAuthenticated: true,
+      isAdmin: false,
+    };
+  }
+  return {
+    status: "success",
+    isAuthenticated: true,
+    isAdmin: true,
+  };
+}
+
 const errorMessage = { status: "error" };
+
 const status = {
   success: 200,
   error: 500,
@@ -13,7 +40,7 @@ const status = {
 };
 
 module.exports = {
-  successMessage,
+  getSuccessMessage,
   errorMessage,
   status,
 };

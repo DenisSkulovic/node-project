@@ -15,15 +15,16 @@ const columns = ["id", "survey_id", "account_id", "created_at", "modified_at"];
 async function isPublic_filled_survey(filled_survey_id) {
   let result = await performQuery(
     `
-    SELECT public
+    SELECT s.public
     FROM surveys s
     LEFT JOIN filled_surveys fs
     ON fs.survey_id = s.id
-    WHERE fs.id = :filled_survey_id;
+    WHERE fs.id = :filled_survey_id
+    AND s.public = true;
   `,
     { filled_survey_id: filled_survey_id }
   );
-  if (result.rows[0]["public"] === true) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -41,17 +42,28 @@ async function isPublic_filled_survey(filled_survey_id) {
  * @returns {object} query result
  */
 async function isOwner_filled_survey(filled_survey_id, email) {
+  let account_id = await performQuery(
+    `
+  SELECT id FROM accounts WHERE email = :email`,
+    { email: email }
+  );
+  if (account_id.rows.length === 0) {
+    return false;
+  }
+  account_id = account_id.rows[0]["id"];
+
   let result = await performQuery(
     `
     SELECT a.email
     FROM filled_surveys fs
     LEFT JOIN accounts a
     ON a.id = fs.account_id
-    WHERE fs.id = :filled_survey_id;
+    WHERE fs.id = :filled_survey_id
+    AND fs.account_id = :account_id;
   `,
-    { filled_survey_id: filled_survey_id }
+    { filled_survey_id: filled_survey_id, account_id: account_id }
   );
-  if (result.rows[0]["email"] == email) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -69,6 +81,16 @@ async function isOwner_filled_survey(filled_survey_id, email) {
  * @returns {object} query result
  */
 async function isSurveyOwner_filled_survey(filled_survey_id, email) {
+  let account_id = await performQuery(
+    `
+  SELECT id FROM accounts WHERE email = :email;`,
+    { email: email }
+  );
+  if (account_id.rows.length === 0) {
+    return false;
+  }
+  account_id = account_id.rows[0]["id"];
+
   let result = await performQuery(
     `
     SELECT a.email
@@ -78,11 +100,11 @@ async function isSurveyOwner_filled_survey(filled_survey_id, email) {
     LEFT JOIN accounts a
     ON a.id = s.account_id
     WHERE fs.id = :filled_survey_id
-    AND a.email = :email;
+    AND s.account_id = :account_id;
   `,
-    { filled_survey_id: filled_survey_id, email: email }
+    { filled_survey_id: filled_survey_id, account_id: account_id }
   );
-  if (result.rows[0]["email"]) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -124,6 +146,7 @@ async function get_filled_survey_list_for_email__all(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -131,6 +154,9 @@ async function get_filled_survey_list_for_email__all(
     `SELECT id FROM accounts WHERE email = :email;`,
     { email: email }
   );
+  if (account_id.rows.length === 0) {
+    return account_id;
+  }
   account_id = account_id.rows[0]["id"];
 
   return await performQuery(
@@ -172,6 +198,7 @@ async function get_filled_survey_list_for_email__filledSurveyOwner(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -179,6 +206,9 @@ async function get_filled_survey_list_for_email__filledSurveyOwner(
     `SELECT id FROM accounts WHERE email = :email;`,
     { email: email }
   );
+  if (account_id.rows.length === 0) {
+    return account_id;
+  }
   account_id = account_id.rows[0]["id"];
 
   return await performQuery(
@@ -218,6 +248,7 @@ async function get_filled_survey_list_for_email__surveyOwner(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -225,6 +256,9 @@ async function get_filled_survey_list_for_email__surveyOwner(
     `SELECT id FROM accounts WHERE email = :email;`,
     { email: email }
   );
+  if (account_id.rows.length === 0) {
+    return account_id;
+  }
   account_id = account_id.rows[0]["id"];
 
   return await performQuery(
@@ -266,6 +300,7 @@ async function get_filled_survey_list_for_email__public(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -273,6 +308,9 @@ async function get_filled_survey_list_for_email__public(
     `SELECT id FROM accounts WHERE email = :email;`,
     { email: email }
   );
+  if (account_id.rows.length === 0) {
+    return account_id;
+  }
   account_id = account_id.rows[0]["id"];
 
   return await performQuery(
@@ -315,7 +353,11 @@ async function create_filled_survey_for_survey_id(survey_id, email) {
       `SELECT id FROM accounts WHERE email = :email;`,
       { email: email }
     );
+    if (account_id.rows.length === 0) {
+      return account_id;
+    }
     account_id = account_id.rows[0]["id"];
+
     return await performQuery(
       `INSERT INTO filled_surveys (survey_id, account_id)
     VALUES (:survey_id, :account_id)

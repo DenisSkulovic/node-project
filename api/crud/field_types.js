@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { successMessage, errorMessage, status } = require("../../utils/status");
+const {
+  getSuccessMessage,
+  errorMessage,
+  status,
+} = require("../../utils/status");
 const {
   get_field_type_for_field_type_id,
   get_field_types_list,
@@ -10,34 +14,51 @@ const {
 } = require("../../database/field_types");
 const { authenticateAccessToken } = require("../../utils/auth");
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// PUBLIC
-//
+/**
+ * PUBLIC
+ */
 router.get("/:fieldTypeID(\\d+)/", async function (req, res) {
+  let user = authenticateAccessToken(req);
+
   // query
   let result = await get_field_type_for_field_type_id(req.params.fieldTypeID);
+
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// PUBLIC
-//
+/**
+ * PUBLIC
+ */
 router.get("/all", async function (req, res) {
+  let user = authenticateAccessToken(req);
   // query
   let result = await get_field_types_list();
+
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// ADMIN
-//
+/**
+ * ADMIN
+ */
 router.post("/create", async function (req, res) {
   let user = authenticateAccessToken(req);
   if (!user.isadmin) {
@@ -47,14 +68,18 @@ router.post("/create", async function (req, res) {
   // query
   let result = await create_field_type(req.body.name);
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// ADMIN
-//
+/**
+ * ADMIN
+ */
 router.put("/:fieldTypeID(\\d+)/update", async function (req, res) {
   let user = authenticateAccessToken(req);
   if (!user.isadmin) {
@@ -64,14 +89,18 @@ router.put("/:fieldTypeID(\\d+)/update", async function (req, res) {
   // query
   let result = await update_field_type(req.body.name, req.params.fieldTypeID);
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// ADMIN
-//
+/**
+ * ADMIN
+ */
 router.delete("/:fieldTypeID(\\d+)/delete", async function (req, res) {
   let user = authenticateAccessToken(req);
   if (!user.isadmin) {
@@ -81,8 +110,8 @@ router.delete("/:fieldTypeID(\\d+)/delete", async function (req, res) {
   // query
   let result = await delete_field_type(req.params.fieldTypeID);
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 // ########################################################################################

@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { successMessage, errorMessage, status } = require("../../utils/status");
+const {
+  getSuccessMessage,
+  errorMessage,
+  status,
+} = require("../../utils/status");
 const {
   isPublic_filled_survey,
   isOwner_filled_survey,
@@ -15,6 +19,7 @@ const {
 } = require("../../database/filled_surveys");
 const { authenticateAccessToken } = require("../../utils/auth");
 
+//
 //
 //
 //
@@ -39,16 +44,17 @@ router.get("/:filledSurveyID(\\d+)/", async function (req, res) {
 
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
 //
 //
+//
 // ########################################################################################
-//
-// ADMIN, PUBLIC or PRIVATE
-//
+/**
+ * ADMIN, PUBLIC or PRIVATE
+ */
 router.get("/for-email/", async function (req, res) {
   let user = authenticateAccessToken(req);
 
@@ -87,16 +93,17 @@ router.get("/for-email/", async function (req, res) {
 
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
 //
 //
+//
 // ########################################################################################
-//
-// PUBLIC
-//
+/**
+ * PUBLIC
+ */
 router.post("/:surveyID(\\d+)/create", async function (req, res) {
   let user = authenticateAccessToken(req);
 
@@ -106,17 +113,18 @@ router.post("/:surveyID(\\d+)/create", async function (req, res) {
   );
 
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
 //
 //
+//
 // ########################################################################################
-//
-// ADMIN or OWNER
-//
+/**
+ * ADMIN or OWNER
+ */
 router.delete("/:filledSurveyID(\\d+)/delete", async function (req, res) {
   let user = authenticateAccessToken(req);
   if (
@@ -129,9 +137,13 @@ router.delete("/:filledSurveyID(\\d+)/delete", async function (req, res) {
   // query
   let result = await delete_filled_survey(req.params.filledSurveyID);
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
 module.exports = router;

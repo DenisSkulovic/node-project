@@ -31,7 +31,7 @@ async function isPublic_survey_field(survey_field_id) {
     `,
     { survey_field_id: survey_field_id }
   );
-  if (result.rows[0]["public"] === true) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -49,6 +49,15 @@ async function isPublic_survey_field(survey_field_id) {
  * @returns {boolean}
  */
 async function isOwner_survey_field(survey_field_id, email) {
+  let account_id = await performQuery(
+    `SELECT id FROM accounts WHERE email = :email`,
+    { email: email }
+  );
+  if (account_id.rows.length === 0) {
+    return false;
+  }
+  account_id = account_id.rows[0]["id"];
+
   let result = await performQuery(
     `
     SELECT a.email
@@ -57,11 +66,12 @@ async function isOwner_survey_field(survey_field_id, email) {
     ON s.id = sf.survey_id
     LEFT JOIN accounts a
     ON a.id = s.account_id
-    WHERE sf.id = :survey_field_id;
+    WHERE sf.id = :survey_field_id
+    AND s.account_id = :account_id;
   `,
-    { survey_field_id: survey_field_id }
+    { survey_field_id: survey_field_id, account_id: account_id }
   );
-  if (result.rows[0]["email"] == email) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -108,6 +118,7 @@ async function get_survey_fields_list_for_survey_id__all(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -151,6 +162,7 @@ async function get_survey_fields_list_for_survey_id__public(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;

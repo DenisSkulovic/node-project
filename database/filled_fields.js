@@ -22,17 +22,18 @@ const columns = [
 async function isPublic_filled_field(filled_field_id) {
   let result = await performQuery(
     `
-    SELECT public
+    SELECT s.public
     FROM surveys s
     LEFT JOIN filled_surveys fs
     ON fs.survey_id = s.id
     LEFT JOIN filled_fields ff
     ON fs.id = ff.filled_survey_id
-    WHERE ff.id = :filled_field_id;
+    WHERE ff.id = :filled_field_id
+    AND s.public = true;
   `,
     { filled_field_id: filled_field_id }
   );
-  if (result.rows[0]["public"] === true) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -50,6 +51,16 @@ async function isPublic_filled_field(filled_field_id) {
  * @returns {boolean}
  */
 async function isOwner_filled_field(filled_field_id, email) {
+  let account_id = await performQuery(
+    `
+  SELECT id FROM accounts WHERE email = :email;`,
+    { email: email }
+  );
+  if (account_id.rows.length === 0) {
+    return false;
+  }
+  account_id = account_id.rows[0]["id"];
+
   let result = await performQuery(
     `
     SELECT a.email 
@@ -58,11 +69,12 @@ async function isOwner_filled_field(filled_field_id, email) {
     ON ff.filled_survey_id = fs.id
     LEFT JOIN accounts a
     ON a.id = ff.account_id
-    WHERE ff.id = :filled_field_id;
+    WHERE ff.id = :filled_field_id
+    AND fs.account_id = :account_id;
   `,
-    { filled_field_id: filled_field_id }
+    { filled_field_id: filled_field_id, account_id: account_id }
   );
-  if (result.rows[0]["email"] == email) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -84,6 +96,9 @@ async function isSurveyOwner_filled_field(filled_field_id, email) {
     `SELECT id FROM accounts WHERE email = $1`,
     [email]
   );
+  if (account_id.rows.length === 0) {
+    return false;
+  }
   account_id = account_id.rows[0]["id"];
 
   let result = await performQuery(
@@ -94,11 +109,12 @@ async function isSurveyOwner_filled_field(filled_field_id, email) {
     ON ff.filled_survey_id = fs.id
     LEFT JOIN surveys s
     ON s.id = fs.survey_id
-    WHERE s.account_id = :account_id;
+    WHERE ff.id = :filled_field_id
+    AND s.account_id = :account_id;
   `,
-    { account_id: account_id }
+    { filled_field_id: filled_field_id, account_id: account_id }
   );
-  if (result.rows[0]["email"]) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -136,6 +152,7 @@ async function get_filled_field_for_filled_field_id(filled_field_id) {
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_filled_fields_list_for_filled_survey_id(
@@ -145,6 +162,7 @@ async function get_filled_fields_list_for_filled_survey_id(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;

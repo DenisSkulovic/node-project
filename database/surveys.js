@@ -25,7 +25,10 @@ async function isOwner_survey(survey_id, email) {
     `SELECT id FROM accounts WHERE email=:email`,
     { email: email }
   );
-  account_id.rows[0]["id"];
+  if (account_id.rows.length === 0) {
+    return false;
+  }
+  account_id = account_id.rows[0]["id"];
 
   let result = await performQuery(
     `
@@ -34,10 +37,10 @@ async function isOwner_survey(survey_id, email) {
   LEFT JOIN accounts a
   ON a.id = s.account_id
   WHERE s.id = :survey_id
-  AND ;`,
+  AND s.account_id = a.id;`,
     { survey_id: survey_id }
   );
-  if (result.rows[0]["email"]) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -57,12 +60,13 @@ async function isPublic_survey(survey_id) {
   let result = await performQuery(
     `
   SELECT public
-  FROM surveys s
-  WHERE s.id = :survey_id;
+  FROM surveys
+  WHERE id = :survey_id
+  AND public = true;
 `,
     { survey_id: survey_id }
   );
-  if (result.rows[0]["public"] === true) {
+  if (result.rows.length > 0) {
     return true;
   }
   return false;
@@ -106,6 +110,10 @@ async function get_survey_for_survey_id__public_or_owner(survey_id, email) {
     `SELECT id FROM accounts WHERE email = :email`,
     { email: email }
   );
+  if (account_id.rows.length === 0) {
+    return account_id;
+  }
+
   account_id = account_id.rows[0]["id"];
 
   return await performQuery(
@@ -153,6 +161,15 @@ async function get_survey_for_survey_id__all(survey_id) {
  * @returns {object} query result
  */
 async function get_survey_for_survey_id__owner(survey_id, email) {
+  let account_id = await performQuery(
+    `
+  SELECT id FROM accounts WHERE email = :email;`,
+    { email: email }
+  );
+  if (account_id.rows.length === 0) {
+    return account_id;
+  }
+  account_id = account_id.rows[0]["id"];
   return await performQuery(
     `
     SELECT *
@@ -160,9 +177,9 @@ async function get_survey_for_survey_id__owner(survey_id, email) {
     LEFT JOIN accounts a
     ON s.account_id = a.id
     WHERE s.id = :survey_id
-    AND a.email = :email;
+    AND s.account_id = :account_id;
   `,
-    { survey_id: survey_id, email: email }
+    { survey_id: survey_id, account_id: account_id }
   );
 }
 
@@ -186,6 +203,7 @@ async function get_survey_list_for_email__all(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -229,6 +247,7 @@ async function get_survey_list_for_email__public_or_owner(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -273,6 +292,7 @@ async function get_survey_list_for_email__owner(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -313,6 +333,7 @@ async function get_survey_list__all(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -351,6 +372,7 @@ async function get_survey_list__public_or_owner(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -395,6 +417,7 @@ async function get_survey_list__owner(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -436,6 +459,7 @@ async function get_survey_list__public(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -478,6 +502,7 @@ async function get_survey_list_for_email__public(
   per_page = 10,
   order = "ASC"
 ) {
+  per_page = per_page > 100 ? 100 : per_page;
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
@@ -515,8 +540,8 @@ async function get_survey_list_for_email__public(
  */
 async function create_survey_for_email(email, survey_title) {
   let account_id = await performQuery(
-    `SELECT id FROM accounts WHERE email = $1;`,
-    [email]
+    `SELECT id FROM accounts WHERE email = :email;`,
+    { email: email }
   );
   account_id = account_id["rows"][0]["id"];
 

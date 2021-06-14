@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { successMessage, errorMessage, status } = require("../../utils/status");
+const {
+  getSuccessMessage,
+  errorMessage,
+  status,
+} = require("../../utils/status");
 const {
   isPublic_filled_field,
   isOwner_filled_field,
@@ -18,6 +22,10 @@ const {
 } = require("../../database/filled_surveys");
 const { authenticateAccessToken } = require("../../utils/auth");
 
+//
+//
+//
+//
 // ########################################################################################
 /**
  * PUBLIC or PRIVATE
@@ -40,13 +48,17 @@ router.get("/:filledFieldID(\\d+)/", async function (req, res) {
 
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// PUBLIC or PRIVATE
-//
+/**
+ * PUBLIC or PRIVATE
+ */
 router.get("/survey/:filledSurveyID(\\d+)/", async function (req, res) {
   let user = authenticateAccessToken(req);
 
@@ -69,13 +81,17 @@ router.get("/survey/:filledSurveyID(\\d+)/", async function (req, res) {
 
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// ADMIN or FILLED SURVEY OWNER
-//
+/**
+ * ADMIN or FILLED SURVEY OWNER
+ */
 router.post("/create", async function (req, res) {
   let user = authenticateAccessToken(req);
 
@@ -93,14 +109,18 @@ router.post("/create", async function (req, res) {
     req.body.answer
   );
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// ADMIN
-//
+/**
+ * ADMIN
+ */
 router.put("/:filledFieldID(\\d+)/update", async function (req, res) {
   let user = authenticateAccessToken(req);
   if (!user.isadmin) {
@@ -115,14 +135,18 @@ router.put("/:filledFieldID(\\d+)/update", async function (req, res) {
     req.params.filledFieldID
   );
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
 // ########################################################################################
-//
-// ADMIN
-//
+/**
+ * ADMIN
+ */
 router.delete("/:filledFieldID(\\d+)/delete", async function (req, res) {
   let user = authenticateAccessToken(req);
   if (!user.isadmin) {
@@ -132,8 +156,8 @@ router.delete("/:filledFieldID(\\d+)/delete", async function (req, res) {
   // query
   let result = await delete_filled_field(req.params.filledFieldID);
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 // ########################################################################################

@@ -7,7 +7,7 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../utils/auth");
-const { successMessage, errorMessage, status } = require("../utils/status");
+const { getSuccessMessage, errorMessage, status } = require("../utils/status");
 const {
   getUserPasswordAndAdminStatus,
   register,
@@ -20,16 +20,18 @@ let refreshTokens = [];
 
 //
 //
+//
+//
+// ###############################################################
 router.post("/refreshtoken", async (req, res) => {
-  const { refreshToken } = req.body;
-  if (!refreshToken) {
-    return res.status(status["unauthorized"]).end();
+  if (!req.body.refreshToken) {
+    return res.status(status["bad"]).end();
   }
-  if (!refreshTokens.includes(refreshToken)) {
-    return res.status(status["forbidden"]).end();
+  if (!refreshTokens.includes(req.body.refreshToken)) {
+    return res.status(status["notfound"]).end();
   }
 
-  let user = authenticateRefreshToken(refreshToken);
+  let user = authenticateRefreshToken(req.body.refreshToken);
   if (!user.email) {
     return res.status(status["forbidden"]).end();
   }
@@ -42,46 +44,67 @@ router.post("/refreshtoken", async (req, res) => {
     isadmin: isadmin,
   });
 
+  let message = getSuccessMessage(user);
+  message["isAuthenticated"] = true;
   return res.status(status["success"]).json({
-    accessToken,
+    accessToken: accessToken,
+    message: message,
   });
 });
 
 //
 //
+//
+//
+// ###############################################################
 router.post("/login", async function (req, res) {
+  let user = authenticateAccessToken(req);
+  let message = getSuccessMessage(user);
+
   if (!req.body.email || !req.body.password) {
     return res.status(status["bad"]).end();
   }
+
   let result = await getUserPasswordAndAdminStatus(req.body.email);
-  if (`${password}` !== `${result.rows[0]["password"]}`) {
+
+  if (req.body.password != result.rows[0]["password"]) {
     return res.status(status["error"]).end();
   }
+
   let isadmin = result.rows[0]["isadmin"];
 
   const accessToken = generateAccessToken({
-    email: email,
+    email: req.body.email,
     isadmin: isadmin,
   });
+
   const refreshToken = generateRefreshToken({
-    email: email,
+    email: req.body.email,
     isadmin: isadmin,
   });
+
   refreshTokens.push(refreshToken);
 
+  console.log("isadmin", isadmin);
+  message["isAuthenticated"] = true;
+  message["isAdmin"] = isadmin ? true : false;
   return res.status(status["success"]).json([
     {
       accessToken: accessToken,
       refreshToken: refreshToken,
-      message: successMessage,
+      message: message,
     },
   ]);
 });
 
 //
 //
+//
+//
+// ###############################################################
 router.post("/register", async function (req, res) {
   let user = authenticateAccessToken(req);
+  let message = getSuccessMessage(user);
 
   if (!req.body.email || !req.body.password) {
     return res.status(status["bad"]).end();
@@ -107,25 +130,39 @@ router.post("/register", async function (req, res) {
   });
   refreshTokens.push(refreshToken);
 
-  return res.status(status["success"]).json([
+  message["isAuthenticated"] = true;
+  message["isAdmin"] = user.isadmin ? true : false;
+  return res.status(status["created"]).json([
     {
       accessToken: accessToken,
       refreshToken: refreshToken,
-      message: successMessage,
+      message: message,
     },
   ]);
 });
 
 //
 //
+//
+//
+// ###############################################################
 router.post("/logout", async function (req, res) {
+  let user = authenticateAccessToken(req);
+  let message = getSuccessMessage(user);
+
   // better to move this refresh tokens list into the database (later)
   refreshTokens = refreshTokens.filter((t) => t !== req.body.refreshToken);
-  return res.status(status["success"]).json([{ message: successMessage }]);
+
+  message["isAuthenticated"] = false;
+  message["isAdmin"] = false;
+  return res.status(status["success"]).json([{ message: message }]);
 });
 
 //
 //
+//
+//
+// ###############################################################
 router.post("/change-password", async function (req, res) {
   let user = authenticateAccessToken(req);
   if (!user.email) {
@@ -151,8 +188,13 @@ router.post("/change-password", async function (req, res) {
   );
 
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
+//
+//
+//
+//
+// ###############################################################
 module.exports = router;

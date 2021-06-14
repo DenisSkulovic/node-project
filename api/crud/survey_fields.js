@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { successMessage, errorMessage, status } = require("../../utils/status");
+const {
+  getSuccessMessage,
+  errorMessage,
+  status,
+} = require("../../utils/status");
 const {
   isPublic_survey_field,
   isOwner_survey_field,
@@ -23,14 +27,15 @@ const { authenticateAccessToken } = require("../../utils/auth");
  * PUBLIC
  */
 router.get("/:surveyFieldID(\\d+)", async function (req, res) {
+  let user = authenticateAccessToken(req);
   // query
   let result = await get_survey_field_for_survey_field_id(
     req.params.surveyFieldID
   );
-  // response
+
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -42,6 +47,7 @@ router.get("/:surveyFieldID(\\d+)", async function (req, res) {
  * PUBLIC
  */
 router.get("/survey/:surveyID(\\d+)", async function (req, res) {
+  let user = authenticateAccessToken(req);
   let result = await get_survey_fields_list_for_survey_id__public(
     req.params.surveyID,
     req.query.order_by,
@@ -50,10 +56,9 @@ router.get("/survey/:surveyID(\\d+)", async function (req, res) {
     req.query.order
   );
 
-  // response
   return res
     .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -83,8 +88,8 @@ router.post("/create", async function (req, res) {
   }
 
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -117,8 +122,8 @@ router.put("/:surveyFieldID(\\d+)/update", async function (req, res) {
   }
 
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 //
@@ -151,8 +156,8 @@ router.delete("/:surveyFieldID(\\d+)/delete", async function (req, res) {
   }
 
   return res
-    .status(status["success"])
-    .json([{ result: result, message: successMessage }]);
+    .status(status["created"])
+    .json([{ result: result, message: getSuccessMessage(user) }]);
 });
 
 module.exports = router;

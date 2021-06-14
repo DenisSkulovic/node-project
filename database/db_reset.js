@@ -1,5 +1,10 @@
 const { performQuery } = require("./db");
 
+//
+//
+//
+//
+// ###############################################################################
 /**
  * Drop every table, create tables and populate them with initial data
  * @returns {object} Query result after creating an admin account. Contains the admin email and admin status.
@@ -179,4 +184,9 @@ async function resetDatabase() {
   );
 }
 
+//
+//
+//
+//
+// ###############################################################################
 module.exports = resetDatabase;
