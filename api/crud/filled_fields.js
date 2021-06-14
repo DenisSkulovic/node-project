@@ -16,6 +16,7 @@ const {
   isOwner_filled_survey,
   isSurveyOwner_filled_survey,
 } = require("../../database/filled_surveys");
+const { authenticateAccessToken } = require("../../utils/auth");
 
 // ########################################################################################
 /**
@@ -37,14 +38,9 @@ router.get("/:filledFieldID(\\d+)/", async function (req, res) {
     );
   }
 
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -66,18 +62,14 @@ router.get("/survey/:filledSurveyID(\\d+)/", async function (req, res) {
       req.params.filledFieldID,
       req.query.order_by,
       req.query.page,
-      req.query.per_page
+      req.query.per_page,
+      req.query.order
     );
   }
 
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -100,14 +92,9 @@ router.post("/create", async function (req, res) {
     req.body.filled_survey_id,
     req.body.answer
   );
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -127,14 +114,9 @@ router.put("/:filledFieldID(\\d+)/update", async function (req, res) {
     req.body.answer,
     req.params.filledFieldID
   );
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -149,14 +131,9 @@ router.delete("/:filledFieldID(\\d+)/delete", async function (req, res) {
 
   // query
   let result = await delete_filled_field(req.params.filledFieldID);
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################

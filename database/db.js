@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const named = require("yesql").pg;
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -16,13 +17,14 @@ const pool = new Pool({
  * Perform Postgres Query.
  * Creates a Postgres client, safely performs query and releases the client.
  * @param {string} query Query string with values specified for parametrization.
- * @param {array} args An array with values to parametrise the query with.
+ * @param {object} kwargs An object with values to parametrise the query with.
  * @returns {object} query result
  */
-async function performQuery(query, args) {
+async function performQuery(query, kwargs) {
+  console.log("query", query);
   let client = await pool.connect();
   try {
-    return await client.query(query, args);
+    return await client.query(named(query)(kwargs));
   } catch (error) {
     return console.log("Query error: ", error);
   } finally {

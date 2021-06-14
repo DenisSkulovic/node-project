@@ -172,10 +172,10 @@ async function resetDatabase() {
   return await performQuery(
     `
     INSERT INTO accounts (email, password, isadmin)
-    VALUES ($1, $2, $3)
+    VALUES (:email, :password, :isadmin)
     RETURNIING email, isadmin;
     `,
-    ["admin@email.com", "123456789", true]
+    { email: "admin@email.com", password: "123456789", isadmin: true }
   );
 }
 

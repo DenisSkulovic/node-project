@@ -7,8 +7,8 @@ const { performQuery } = require("./db");
  */
 async function getUserPasswordAndAdminStatus(email) {
   return await performQuery(
-    `SELECT password, isadmin FROM accounts WHERE email = $1`,
-    [email]
+    `SELECT password, isadmin FROM accounts WHERE email = :email`,
+    { email: email }
   );
 }
 
@@ -23,10 +23,10 @@ async function register(email, password, is_admin = false) {
   return await performQuery(
     `
     INSERT INTO accounts (email, password, isadmin)
-        VALUES ($1, $2, $3)
+        VALUES (:email, :password, :is_admin)
         RETURNING email, isadmin;
     `,
-    [email, password, is_admin]
+    { email: email, password: password, is_admin: is_admin }
   );
 }
 
@@ -40,11 +40,11 @@ async function change_password(email, password) {
   return await performQuery(
     `
     UPDATE accounts
-      SET password = $1
-      WHERE email = $2
+      SET password = :password
+      WHERE email = :email
       RETURNING email, isadmin;
     `,
-    [password, email]
+    { password: password, email: email }
   );
 }
 

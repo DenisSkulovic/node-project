@@ -1,5 +1,14 @@
 const { performQuery } = require("./db");
 
+const columns = [
+  "id",
+  "title",
+  "account_id",
+  "created_at",
+  "modified_at",
+  "public",
+];
+
 //
 //
 //
@@ -12,16 +21,23 @@ const { performQuery } = require("./db");
  * @returns {boolean}
  */
 async function isOwner_survey(survey_id, email) {
+  let account_id = await performQuery(
+    `SELECT id FROM accounts WHERE email=:email`,
+    { email: email }
+  );
+  account_id.rows[0]["id"];
+
   let result = await performQuery(
     `
   SELECT a.email
   FROM surveys s
   LEFT JOIN accounts a
   ON a.id = s.account_id
-  WHERE sf.id = $1;`,
-    [survey_id, email]
+  WHERE s.id = :survey_id
+  AND ;`,
+    { survey_id: survey_id }
   );
-  if (result.rows[0]["email"] == email) {
+  if (result.rows[0]["email"]) {
     return true;
   }
   return false;
@@ -42,9 +58,9 @@ async function isPublic_survey(survey_id) {
     `
   SELECT public
   FROM surveys s
-  WHERE s.id = $1;
+  WHERE s.id = :survey_id;
 `,
-    [survey_id]
+    { survey_id: survey_id }
   );
   if (result.rows[0]["public"] === true) {
     return true;
@@ -67,10 +83,10 @@ async function get_survey_for_survey_id__public(survey_id) {
     `
   SELECT * 
   FROM surveys s
-  WHERE s.id = $1
+  WHERE s.id = :survey_id
   AND s.public = true;
 `,
-    [survey_id]
+    { survey_id: survey_id }
   );
 }
 
@@ -87,19 +103,20 @@ async function get_survey_for_survey_id__public(survey_id) {
  */
 async function get_survey_for_survey_id__public_or_owner(survey_id, email) {
   let account_id = await performQuery(
-    `SELECT id FROM accounts WHERE email = $1`,
-    [email]
+    `SELECT id FROM accounts WHERE email = :email`,
+    { email: email }
   );
+  account_id = account_id.rows[0]["id"];
 
   return await performQuery(
     `
   SELECT * 
   FROM surveys s
-  WHERE s.id = $1
+  WHERE s.id = :survey_id
   AND s.public = true
-  OR s.account_id = $2;
+  OR s.account_id = :account_id;
 `,
-    [survey_id, account_id]
+    { survey_id: survey_id, account_id: account_id }
   );
 }
 
@@ -118,9 +135,9 @@ async function get_survey_for_survey_id__all(survey_id) {
     `
     SELECT *
     FROM surveys 
-    WHERE id = $1;
+    WHERE id = :survey_id;
   `,
-    [survey_id]
+    { survey_id: survey_id }
   );
 }
 
@@ -142,10 +159,10 @@ async function get_survey_for_survey_id__owner(survey_id, email) {
     FROM surveys s
     LEFT JOIN accounts a
     ON s.account_id = a.id
-    WHERE s.id = $1
-    AND a.email = $2;
+    WHERE s.id = :survey_id
+    AND a.email = :email;
   `,
-    [survey_id, email]
+    { survey_id: survey_id, email: email }
   );
 }
 
@@ -166,7 +183,8 @@ async function get_survey_list_for_email__all(
   email,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -176,12 +194,18 @@ async function get_survey_list_for_email__all(
     FROM surveys s
     LEFT JOIN accounts a
     ON s.account_id = a.id
-    WHERE a.email = $1
-    ORDER BY s.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [email, order_by, offset, per_page_num]
+    WHERE a.email = :email
+    ORDER BY s.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      email: email,
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -202,7 +226,8 @@ async function get_survey_list_for_email__public_or_owner(
   email,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -212,13 +237,19 @@ async function get_survey_list_for_email__public_or_owner(
     FROM surveys s
     LEFT JOIN accounts a
     ON s.account_id = a.id
-    WHERE a.email = $1
+    WHERE a.email = :email
     OR s.public = true
-    ORDER BY s.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [email, order_by, offset, per_page_num]
+    ORDER BY s.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      email: email,
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -239,7 +270,8 @@ async function get_survey_list_for_email__owner(
   email,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -249,12 +281,18 @@ async function get_survey_list_for_email__owner(
     FROM surveys s
     LEFT JOIN accounts a
     ON s.account_id = a.id
-    WHERE a.email = $1
-    ORDER BY s.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [email, order_by, offset, per_page_num]
+    WHERE a.email = :email
+    ORDER BY s.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      email: email,
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 //
@@ -269,18 +307,27 @@ async function get_survey_list_for_email__owner(
  * @param {number} per_page
  * @returns {object} query result
  */
-async function get_survey_list__all(order_by = "id", page = 1, per_page = 10) {
+async function get_survey_list__all(
+  order_by = "id",
+  page = 1,
+  per_page = 10,
+  order = "ASC"
+) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
   return await performQuery(
-    `SELECT s.*
-    FROM surveys s
-    ORDER BY $1
-    DESC
-    OFFSET $2
-    LIMIT $3;`,
-    [order_by, offset, per_page_num]
+    `SELECT *
+    FROM surveys
+    ORDER BY ${columns.includes(order_by) ? order_by : "id"}
+    ${order.toUpperCase() === "DESC" ? "DESC" : "ASC"}
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      order_by: order_by,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -301,7 +348,8 @@ async function get_survey_list__public_or_owner(
   email,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -311,13 +359,19 @@ async function get_survey_list__public_or_owner(
     FROM surveys s
     LEFT JOIN accounts a
     ON s.account_id = a.id
-    WHERE a.email = $1
+    WHERE a.email = :email
     OR s.public = true
-    ORDER BY s.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [email, order_by, offset, per_page_num]
+    ORDER BY s.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      email: email,
+      order: order,
+      order_by: order_by,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -338,7 +392,8 @@ async function get_survey_list__owner(
   email,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -348,12 +403,18 @@ async function get_survey_list__owner(
     FROM surveys s
     LEFT JOIN accounts a
     ON s.account_id = a.id
-    WHERE a.email = $1
-    ORDER BY s.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [email, order_by, offset, per_page_num]
+    WHERE a.email = :email
+    ORDER BY s.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      email: email,
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -372,7 +433,8 @@ async function get_survey_list__owner(
 async function get_survey_list__public(
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -383,11 +445,16 @@ async function get_survey_list__public(
     LEFT JOIN accounts a
     ON s.account_id = a.id
     WHERE s.public = true
-    ORDER BY s.$1
-    DESC
-    OFFSET $2
-    LIMIT $3;`,
-    [order_by, offset, per_page_num]
+    ORDER BY s.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -408,7 +475,8 @@ async function get_survey_list_for_email__public(
   email,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -418,13 +486,19 @@ async function get_survey_list_for_email__public(
     FROM surveys s
     LEFT JOIN accounts a
     ON s.account_id = a.id
-    WHERE a.email = $1
+    WHERE a.email = :email
     AND s.public = true
-    ORDER BY s.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [email, order_by, offset, per_page_num]
+    ORDER BY s.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      email: email,
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -448,9 +522,9 @@ async function create_survey_for_email(email, survey_title) {
 
   return await performQuery(
     `INSERT INTO surveys (title, account_id)
-        VALUES ($1, $2)
+        VALUES (:survey_title, :account_id)
         RETURNING *;`,
-    [survey_title, account_id]
+    { survey_title: survey_title, account_id: account_id }
   );
 }
 
@@ -472,11 +546,11 @@ async function update_survey_for_survey_id(survey_title, public, survey_id) {
   }
   return await performQuery(
     `UPDATE surveys
-    SET title = $1
-        public = $2
-    WHERE id = $3
+    SET title = :survey_title
+        public = :public
+    WHERE id = :survey_id
     RETURNING id, title, account_id, created_at, modified_at;`,
-    [survey_title, public, survey_id]
+    { survey_title: survey_title, public: public, survey_id: survey_id }
   );
 }
 
@@ -493,8 +567,8 @@ async function update_survey_for_survey_id(survey_title, public, survey_id) {
 async function delete_survey_by_survey_id(survey_id) {
   return await performQuery(
     `DELETE FROM surveys
-      WHERE id = $1`,
-    [survey_id]
+      WHERE id = :survey_id`,
+    { survey_id: survey_id }
   );
 }
 

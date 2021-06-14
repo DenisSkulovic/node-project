@@ -30,7 +30,7 @@ router.post("/refreshtoken", async (req, res) => {
   }
 
   let user = authenticateRefreshToken(refreshToken);
-  if (!user) {
+  if (!user.email) {
     return res.status(status["forbidden"]).end();
   }
 
@@ -50,38 +50,32 @@ router.post("/refreshtoken", async (req, res) => {
 //
 //
 router.post("/login", async function (req, res) {
-  try {
-    const { email, password } = req.body;
-    if (email && password) {
-      let result = await getUserPasswordAndAdminStatus(req.body.email);
-      if (`${password}` !== `${result.rows[0]["password"]}`) {
-        return res.status(status["error"]).end();
-      }
-      let isadmin = result.rows[0]["isadmin"];
-
-      const accessToken = generateAccessToken({
-        email: email,
-        isadmin: isadmin,
-      });
-      const refreshToken = generateRefreshToken({
-        email: email,
-        isadmin: isadmin,
-      });
-      refreshTokens.push(refreshToken);
-
-      return res.status(status["success"]).json([
-        {
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          message: successMessage,
-        },
-      ]);
-    } else {
-      return res.status(status["notfound"]).end();
-    }
-  } catch {
+  if (!req.body.email || !req.body.password) {
+    return res.status(status["bad"]).end();
+  }
+  let result = await getUserPasswordAndAdminStatus(req.body.email);
+  if (`${password}` !== `${result.rows[0]["password"]}`) {
     return res.status(status["error"]).end();
   }
+  let isadmin = result.rows[0]["isadmin"];
+
+  const accessToken = generateAccessToken({
+    email: email,
+    isadmin: isadmin,
+  });
+  const refreshToken = generateRefreshToken({
+    email: email,
+    isadmin: isadmin,
+  });
+  refreshTokens.push(refreshToken);
+
+  return res.status(status["success"]).json([
+    {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      message: successMessage,
+    },
+  ]);
 });
 
 //

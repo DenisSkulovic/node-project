@@ -9,8 +9,8 @@ async function get_account_passwordless(email) {
   return await performQuery(
     `SELECT id, email, is_admin, created_at, modified_at 
         FROM accounts 
-        WHERE email = $1;`,
-    [email]
+        WHERE email = :email;`,
+    { email: email }
   );
 }
 
@@ -20,9 +20,9 @@ async function get_account_passwordless(email) {
  * @returns {object} query result
  */
 async function get_account_full(email) {
-  return await performQuery(`SELECT * FROM accounts WHERE email = $1;`, [
-    email,
-  ]);
+  return await performQuery(`SELECT * FROM accounts WHERE email = :email;`, {
+    email: email,
+  });
 }
 
 module.exports = {

@@ -1,5 +1,14 @@
 const { performQuery } = require("./db");
 
+const columns = [
+  "id",
+  "field_type_id",
+  "survey_id",
+  "title",
+  "created_at",
+  "modified_at",
+];
+
 //
 //
 //
@@ -17,10 +26,10 @@ async function isPublic_survey_field(survey_field_id) {
       FROM surveys s
       LEFT JOIN survey_fields sf
       ON sf.survey_id = s.id
-      WHERE sf.id = $1
+      WHERE sf.id = :survey_field_id
       AND s.public = true;
     `,
-    [survey_field_id]
+    { survey_field_id: survey_field_id }
   );
   if (result.rows[0]["public"] === true) {
     return true;
@@ -48,9 +57,9 @@ async function isOwner_survey_field(survey_field_id, email) {
     ON s.id = sf.survey_id
     LEFT JOIN accounts a
     ON a.id = s.account_id
-    WHERE sf.id = $1;
+    WHERE sf.id = :survey_field_id;
   `,
-    [survey_field_id]
+    { survey_field_id: survey_field_id }
   );
   if (result.rows[0]["email"] == email) {
     return true;
@@ -73,9 +82,9 @@ async function get_survey_field_for_survey_field_id(survey_field_id) {
     `
     SELECT * 
     FROM survey_fields
-    WHERE id = $1;
+    WHERE id = :survey_field_id;
   `,
-    [survey_field_id]
+    { survey_field_id: survey_field_id }
   );
 }
 
@@ -96,19 +105,29 @@ async function get_survey_fields_list_for_survey_id__all(
   survey_id,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
+  let page_num = parseInt(page);
+  let per_page_num = parseInt(per_page);
+  let offset = page_num * per_page_num - per_page_num;
   return await performQuery(
     `SELECT sf.*
     FROM survey_fields sf
     LEFT JOIN survey s
     ON s.id = sf.survey_id
-    WHERE s.id = $1
-    ORDER BY sf.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [survey_id, order_by, page, per_page]
+    WHERE s.id = :survey_id
+    ORDER BY sf.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page;`,
+    {
+      survey_id: survey_id,
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page: per_page,
+    }
   );
 }
 
@@ -129,20 +148,30 @@ async function get_survey_fields_list_for_survey_id__public(
   survey_id,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
+  let page_num = parseInt(page);
+  let per_page_num = parseInt(per_page);
+  let offset = page_num * per_page_num - per_page_num;
   return await performQuery(
     `SELECT sf.*
     FROM survey_fields sf
     LEFT JOIN survey s
     ON s.id = sf.survey_id
-    WHERE s.id = $1
+    WHERE s.id = :survey_id
     AND s.public = true
-    ORDER BY sf.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [survey_id, order_by, page, per_page]
+    ORDER BY sf.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page;`,
+    {
+      survey_id: survey_id,
+      order_by: order_by,
+      order: order,
+      offset: offset,
+      per_page: per_page,
+    }
   );
 }
 
@@ -161,9 +190,9 @@ async function get_survey_fields_list_for_survey_id__public(
 async function create_survey_field(field_type_id, survey_id, title) {
   return await performQuery(
     `INSERT INTO survey_fields (field_type_id, survey_id, title)
-    VALUES ($1, $2, $3)
+    VALUES (:field_type_id, :survey_id, :title)
     RETURNING *;`,
-    [field_type_id, survey_id, title]
+    { field_type_id: field_type_id, survey_id: survey_id, title: title }
   );
 }
 
@@ -186,11 +215,15 @@ async function update_survey_field(
 ) {
   return await performQuery(
     `UPDATE survey_fields
-    SET title = $1
-        survey_type_id = $2
-    WHERE id = $3
+    SET title = :survey_field_title
+        survey_type_id = :survey_field_type_id
+    WHERE id = :survey_field_id
     RETURNING *;`,
-    [survey_field_title, survey_field_type_id, survey_field_id]
+    {
+      survey_field_title: survey_field_title,
+      survey_field_type_id: survey_field_type_id,
+      survey_field_id: survey_field_id,
+    }
   );
 }
 
@@ -207,8 +240,8 @@ async function update_survey_field(
 async function delete_survey_field(survey_field_id) {
   return await performQuery(
     `DELETE FROM survey_fields
-    WHERE id = $1`,
-    [survey_field_id]
+    WHERE id = :survey_field_id`,
+    { survey_field_id: survey_field_id }
   );
 }
 

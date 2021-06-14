@@ -8,6 +8,7 @@ const {
   update_field_type,
   delete_field_type,
 } = require("../../database/field_types");
+const { authenticateAccessToken } = require("../../utils/auth");
 
 // ########################################################################################
 //
@@ -16,14 +17,9 @@ const {
 router.get("/:fieldTypeID(\\d+)/", async function (req, res) {
   // query
   let result = await get_field_type_for_field_type_id(req.params.fieldTypeID);
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -33,14 +29,9 @@ router.get("/:fieldTypeID(\\d+)/", async function (req, res) {
 router.get("/all", async function (req, res) {
   // query
   let result = await get_field_types_list();
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -55,14 +46,9 @@ router.post("/create", async function (req, res) {
 
   // query
   let result = await create_field_type(req.body.name);
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -77,14 +63,9 @@ router.put("/:fieldTypeID(\\d+)/update", async function (req, res) {
 
   // query
   let result = await update_field_type(req.body.name, req.params.fieldTypeID);
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################
@@ -99,14 +80,9 @@ router.delete("/:fieldTypeID(\\d+)/delete", async function (req, res) {
 
   // query
   let result = await delete_field_type(req.params.fieldTypeID);
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################

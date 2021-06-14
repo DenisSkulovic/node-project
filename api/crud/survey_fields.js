@@ -12,6 +12,7 @@ const {
   delete_survey_field,
 } = require("../../database/survey_fields");
 const { isPublic_survey, isOwner_survey } = require("../../database/surveys");
+const { authenticateAccessToken } = require("../../utils/auth");
 
 //
 //
@@ -21,19 +22,15 @@ const { isPublic_survey, isOwner_survey } = require("../../database/surveys");
 /**
  * PUBLIC
  */
-router.get("/:surveyFieldID(\\d+)/", async function (req, res) {
+router.get("/:surveyFieldID(\\d+)", async function (req, res) {
   // query
   let result = await get_survey_field_for_survey_field_id(
     req.params.surveyFieldID
   );
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  // response
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 //
@@ -44,22 +41,19 @@ router.get("/:surveyFieldID(\\d+)/", async function (req, res) {
 /**
  * PUBLIC
  */
-router.get("/survey/:surveyID(\\d+)/", async function (req, res) {
+router.get("/survey/:surveyID(\\d+)", async function (req, res) {
   let result = await get_survey_fields_list_for_survey_id__public(
     req.params.surveyID,
     req.query.order_by,
     req.query.page,
-    req.query.per_page
+    req.query.per_page,
+    req.query.order
   );
 
   // response
-  if (result) {
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 //
@@ -88,14 +82,9 @@ router.post("/create", async function (req, res) {
     return res.status(status["unauthorized"]).end();
   }
 
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 //
@@ -127,14 +116,9 @@ router.put("/:surveyFieldID(\\d+)/update", async function (req, res) {
     return res.status(status["unauthorized"]).end();
   }
 
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 //
@@ -166,14 +150,9 @@ router.delete("/:surveyFieldID(\\d+)/delete", async function (req, res) {
     return res.status(status["unauthorized"]).end();
   }
 
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 module.exports = router;

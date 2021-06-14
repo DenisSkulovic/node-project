@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const resetDatabase = require("../database/db_reset");
+const { authenticateAccessToken } = require("../utils/auth");
 const { successMessage, errorMessage, status } = require("../utils/status");
 
 //

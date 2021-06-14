@@ -13,6 +13,7 @@ const {
   create_filled_survey_for_survey_id,
   delete_filled_survey,
 } = require("../../database/filled_surveys");
+const { authenticateAccessToken } = require("../../utils/auth");
 
 //
 //
@@ -36,14 +37,9 @@ router.get("/:filledSurveyID(\\d+)/", async function (req, res) {
     );
   }
 
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 //
@@ -69,31 +65,29 @@ router.get("/for-email/", async function (req, res) {
           req.query.email
         );
       }
+      break;
     case "filledSurveyOwner":
       if (req.query.email === user.email || user.isadmin) {
         result = await get_filled_survey_list_for_email__filledSurveyOwner(
           req.query.email
         );
       }
+      break;
     case "all":
       if (user.isadmin) {
         result = await get_filled_survey_list_for_email__all(req.query.email);
       }
+      break;
     case "public":
       result = await get_filled_survey_list_for_email__public(req.query.email);
+      break;
     default:
       result = await get_filled_survey_list_for_email__public(req.query.email);
   }
 
-  // query
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 //
@@ -111,14 +105,9 @@ router.post("/:surveyID(\\d+)/create", async function (req, res) {
     user.email
   );
 
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 //
@@ -139,14 +128,9 @@ router.delete("/:filledSurveyID(\\d+)/delete", async function (req, res) {
 
   // query
   let result = await delete_filled_survey(req.params.filledSurveyID);
-  if (result) {
-    // response
-    return res
-      .status(status["success"])
-      .json([{ result: result, message: successMessage }]);
-  } else {
-    return res.status(status["notfound"]).end();
-  }
+  return res
+    .status(status["success"])
+    .json([{ result: result, message: successMessage }]);
 });
 
 // ########################################################################################

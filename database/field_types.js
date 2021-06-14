@@ -15,9 +15,9 @@ async function get_field_type_for_field_type_id(field_type_id) {
     `
     SELECT * 
     FROM field_types
-    WHERE id = $1;
+    WHERE id = :field_type_id;
   `,
-    [field_type_id]
+    { field_type_id: field_type_id }
   );
 }
 
@@ -34,9 +34,9 @@ async function get_field_types_list() {
   return await performQuery(
     `
     SELECT *
-    FROM field_types
+    FROM field_types;
   `,
-    []
+    {}
   );
 }
 
@@ -53,9 +53,9 @@ async function get_field_types_list() {
 async function create_field_type(name) {
   return await performQuery(
     `INSERT INTO field_types (name)
-    VALUES ($1)
+    VALUES (:name)
     RETURNING *;`,
-    [name]
+    { name: name }
   );
 }
 
@@ -73,10 +73,10 @@ async function create_field_type(name) {
 async function update_field_type(name, field_type_id) {
   return await performQuery(
     `UPDATE field_types
-    SET name = $1
-    WHERE id = $2
+    SET name = :name
+    WHERE id = :field_type_id
     RETURNING *;`,
-    [name, field_type_id]
+    { name: name, field_type_id: field_type_id }
   );
 }
 
@@ -93,8 +93,8 @@ async function update_field_type(name, field_type_id) {
 async function delete_field_type(field_type_id) {
   return await performQuery(
     `DELETE FROM field_types
-    WHERE id = $1`,
-    [field_type_id]
+    WHERE id = :field_type_id`,
+    { field_type_id: field_type_id }
   );
 }
 

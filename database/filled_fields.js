@@ -1,5 +1,14 @@
 const { performQuery } = require("./db");
 
+const columns = [
+  "id",
+  "survey_field_id",
+  "filled_survey_id",
+  "answer",
+  "created_at",
+  "modified_at",
+];
+
 //
 //
 //
@@ -19,9 +28,9 @@ async function isPublic_filled_field(filled_field_id) {
     ON fs.survey_id = s.id
     LEFT JOIN filled_fields ff
     ON fs.id = ff.filled_survey_id
-    WHERE ff.id = $1;
+    WHERE ff.id = :filled_field_id;
   `,
-    [filled_field_id]
+    { filled_field_id: filled_field_id }
   );
   if (result.rows[0]["public"] === true) {
     return true;
@@ -49,9 +58,9 @@ async function isOwner_filled_field(filled_field_id, email) {
     ON ff.filled_survey_id = fs.id
     LEFT JOIN accounts a
     ON a.id = ff.account_id
-    WHERE ff.id = $1;
+    WHERE ff.id = :filled_field_id;
   `,
-    [filled_field_id]
+    { filled_field_id: filled_field_id }
   );
   if (result.rows[0]["email"] == email) {
     return true;
@@ -85,9 +94,9 @@ async function isSurveyOwner_filled_field(filled_field_id, email) {
     ON ff.filled_survey_id = fs.id
     LEFT JOIN surveys s
     ON s.id = fs.survey_id
-    WHERE s.account_id = $1;
+    WHERE s.account_id = :account_id;
   `,
-    [account_id]
+    { account_id: account_id }
   );
   if (result.rows[0]["email"]) {
     return true;
@@ -110,9 +119,9 @@ async function get_filled_field_for_filled_field_id(filled_field_id) {
     `
     SELECT * 
     FROM filled_fields
-    WHERE id = $1;
+    WHERE id = :filled_field_id;
   `,
-    [filled_field_id]
+    { filled_field_id: filled_field_id }
   );
 }
 
@@ -133,7 +142,8 @@ async function get_filled_fields_list_for_filled_survey_id(
   filled_survey_id,
   order_by = "id",
   page = 1,
-  per_page = 10
+  per_page = 10,
+  order = "ASC"
 ) {
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
@@ -143,12 +153,18 @@ async function get_filled_fields_list_for_filled_survey_id(
     FROM filled_fields ff
     LEFT JOIN filled_surveys fs
     ON ff.filled_survey_id = fs.id
-    WHERE fs.id = $1
-    ORDER BY ff.$2
-    DESC
-    OFFSET $3
-    LIMIT $4;`,
-    [filled_survey_id, order_by, offset, per_page_num]
+    WHERE fs.id = :filled_survey_id
+    ORDER BY ff.${columns.includes(order_by) ? order_by : "id"}
+    ${order === "DESC" ? "DESC" : "ASC"}    
+    OFFSET :offset
+    LIMIT :per_page_num;`,
+    {
+      filled_survey_id: filled_survey_id,
+      order: order,
+      order_by: order_by,
+      offset: offset,
+      per_page_num: per_page_num,
+    }
   );
 }
 
@@ -167,9 +183,13 @@ async function get_filled_fields_list_for_filled_survey_id(
 async function create_filled_field(survey_field_id, filled_survey_id, answer) {
   return await performQuery(
     `INSERT INTO filled_fields (survey_field_id, filled_survey_id, answer)
-    VALUES ($1, $2, $3)
+    VALUES (:survey_field_id, :filled_survey_id, :answer)
     RETURNING *;`,
-    [survey_field_id, filled_survey_id, answer]
+    {
+      survey_field_id: survey_field_id,
+      filled_survey_id: filled_survey_id,
+      answer: answer,
+    }
   );
 }
 
@@ -194,12 +214,17 @@ async function update_filled_field(
 ) {
   return await performQuery(
     `UPDATE survey_fields
-    SET survey_field_id = $1
-      filled_survey_id = $2
-      answer = $3
-    WHERE id = $4
+    SET survey_field_id = :survey_field_id
+      filled_survey_id = :filled_survey_id
+      answer = :answer
+    WHERE id = :filled_field_id
     RETURNING *;`,
-    [survey_field_id, filled_survey_id, answer, filled_field_id]
+    {
+      survey_field_id: survey_field_id,
+      filled_survey_id: filled_survey_id,
+      answer: answer,
+      filled_field_id: filled_field_id,
+    }
   );
 }
 
@@ -216,8 +241,8 @@ async function update_filled_field(
 async function delete_filled_field(filled_field_id) {
   return await performQuery(
     `DELETE FROM filled_fields
-    WHERE id = $1`,
-    [filled_field_id]
+    WHERE id = :filled_field_id`,
+    { filled_field_id: filled_field_id }
   );
 }
 
