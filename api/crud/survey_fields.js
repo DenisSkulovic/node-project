@@ -108,6 +108,13 @@ router.put("/:surveyFieldID(\\d+)/update", async function (req, res) {
   if (!user.email) {
     return res.status(status["unauthorized"]).end();
   }
+  if (
+    !req.params.surveyFieldID ||
+    !req.body.survey_field_title ||
+    !req.body.survey_field_type_id
+  ) {
+    return res.status(status["bad"]).end();
+  }
 
   let result;
 

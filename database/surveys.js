@@ -21,6 +21,7 @@ const columns = [
  * @param {string} email
  * @returns {boolean}
  */
+// -------------------------------------------------------------------------------
 async function isOwner_survey(survey_id, email) {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email=:email`,
@@ -57,6 +58,7 @@ async function isOwner_survey(survey_id, email) {
  * @param {number} survey_id
  * @returns {boolean}
  */
+// -------------------------------------------------------------------------------
 async function isPublic_survey(survey_id) {
   let result = await performQuery(
     `
@@ -83,6 +85,7 @@ async function isPublic_survey(survey_id) {
  * @param {number} survey_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_for_survey_id__public(survey_id) {
   return await performQuery(
     `
@@ -106,6 +109,7 @@ async function get_survey_for_survey_id__public(survey_id) {
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_for_survey_id__public_or_owner(survey_id, email) {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email`,
@@ -139,6 +143,7 @@ async function get_survey_for_survey_id__public_or_owner(survey_id, email) {
  * @param {number} survey_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_for_survey_id__all(survey_id) {
   return await performQuery(
     `
@@ -161,6 +166,7 @@ async function get_survey_for_survey_id__all(survey_id) {
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_for_survey_id__owner(survey_id, email) {
   let account_id = await performQuery(
     `
@@ -198,6 +204,7 @@ async function get_survey_for_survey_id__owner(survey_id, email) {
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list_for_email__all(
   email,
   order_by = "id",
@@ -243,6 +250,7 @@ async function get_survey_list_for_email__all(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list_for_email__public_or_owner(
   email,
   order_by = "id",
@@ -289,6 +297,7 @@ async function get_survey_list_for_email__public_or_owner(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list_for_email__owner(
   email,
   order_by = "id",
@@ -332,6 +341,7 @@ async function get_survey_list_for_email__owner(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list__all(
   order_by = "id",
   page = 1,
@@ -371,6 +381,7 @@ async function get_survey_list__all(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list__public_or_owner(
   email,
   order_by = "id",
@@ -417,6 +428,7 @@ async function get_survey_list__public_or_owner(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list__owner(
   email,
   order_by = "id",
@@ -461,6 +473,7 @@ async function get_survey_list__owner(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list__public(
   order_by = "id",
   page = 1,
@@ -504,6 +517,7 @@ async function get_survey_list__public(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_list_for_email__public(
   email,
   order_by = "id",
@@ -547,6 +561,7 @@ async function get_survey_list_for_email__public(
  * @param {string} survey_title
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function create_survey_for_email(email, survey_title) {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email;`,
@@ -574,6 +589,7 @@ async function create_survey_for_email(email, survey_title) {
  * @param {number} survey_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function update_survey_for_survey_id(survey_title, public, survey_id) {
   if (!survey_title || !public || !survey_id) {
     return console.log("Not all data provided.");
@@ -598,6 +614,7 @@ async function update_survey_for_survey_id(survey_title, public, survey_id) {
  * @param {number} survey_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function delete_survey_by_survey_id(survey_id) {
   return await performQuery(
     `DELETE FROM surveys

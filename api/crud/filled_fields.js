@@ -126,6 +126,14 @@ router.put("/:filledFieldID(\\d+)/update", async function (req, res) {
   if (!user.isadmin) {
     return res.status(status["unauthorized"]).end();
   }
+  if (
+    !req.body.survey_field_id ||
+    !req.body.filled_survey_id ||
+    !req.body.answer ||
+    !req.params.filledFieldID
+  ) {
+    return res.status(status["bad"]).end();
+  }
 
   // query
   let result = await update_filled_field(

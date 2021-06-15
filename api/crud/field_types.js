@@ -85,9 +85,13 @@ router.put("/:fieldTypeID(\\d+)/update", async function (req, res) {
   if (!user.isadmin) {
     return res.status(status["unauthorized"]).end();
   }
+  if (!req.body.name || !req.params.fieldTypeID) {
+    return res.status(status["bad"]).end();
+  }
 
   // query
   let result = await update_field_type(req.body.name, req.params.fieldTypeID);
+
   return res
     .status(status["created"])
     .json([{ result: result, message: getSuccessMessage(user) }]);
@@ -109,6 +113,7 @@ router.delete("/:fieldTypeID(\\d+)/delete", async function (req, res) {
 
   // query
   let result = await delete_field_type(req.params.fieldTypeID);
+
   return res
     .status(status["created"])
     .json([{ result: result, message: getSuccessMessage(user) }]);

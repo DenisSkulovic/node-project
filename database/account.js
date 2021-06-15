@@ -10,6 +10,7 @@ const { performQuery } = require("./db");
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_account_passwordless(email) {
   return await performQuery(
     `SELECT id, email, is_admin, created_at, modified_at 
@@ -29,14 +30,13 @@ async function get_account_passwordless(email) {
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_account_full(email) {
   return await performQuery(
     `SELECT * 
     FROM accounts 
     WHERE email = :email;`,
-    {
-      email: email,
-    }
+    { email: email }
   );
 }
 

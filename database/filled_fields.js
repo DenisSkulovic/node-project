@@ -20,6 +20,7 @@ const columns = [
  * @param {number} filled_field_id
  * @returns {boolean}
  */
+// -------------------------------------------------------------------------------
 async function isPublic_filled_field(filled_field_id) {
   let result = await performQuery(
     `
@@ -51,6 +52,7 @@ async function isPublic_filled_field(filled_field_id) {
  * @param {string} email
  * @returns {boolean}
  */
+// -------------------------------------------------------------------------------
 async function isOwner_filled_field(filled_field_id, email) {
   let account_id = await performQuery(
     `
@@ -92,6 +94,7 @@ async function isOwner_filled_field(filled_field_id, email) {
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function isSurveyOwner_filled_field(filled_field_id, email) {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email`,
@@ -131,6 +134,7 @@ async function isSurveyOwner_filled_field(filled_field_id, email) {
  * @param {number} filled_field_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_filled_field_for_filled_field_id(filled_field_id) {
   return await performQuery(
     `
@@ -156,6 +160,7 @@ async function get_filled_field_for_filled_field_id(filled_field_id) {
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_filled_fields_list_for_filled_survey_id(
   filled_survey_id,
   order_by = "id",
@@ -199,6 +204,7 @@ async function get_filled_fields_list_for_filled_survey_id(
  * @param {string} answer
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function create_filled_field(survey_field_id, filled_survey_id, answer) {
   return await performQuery(
     `INSERT INTO filled_fields (survey_field_id, filled_survey_id, answer)
@@ -225,6 +231,7 @@ async function create_filled_field(survey_field_id, filled_survey_id, answer) {
  * @param {number} filled_field_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function update_filled_field(
   survey_field_id,
   filled_survey_id,
@@ -257,6 +264,7 @@ async function update_filled_field(
  * @param {number} filled_field_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function delete_filled_field(filled_field_id) {
   return await performQuery(
     `DELETE FROM filled_fields

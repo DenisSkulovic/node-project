@@ -20,6 +20,7 @@ const columns = [
  * @param {number} survey_field_id
  * @returns {boolean}
  */
+// -------------------------------------------------------------------------------
 async function isPublic_survey_field(survey_field_id) {
   let result = await performQuery(
     `
@@ -49,6 +50,7 @@ async function isPublic_survey_field(survey_field_id) {
  * @param {string} email
  * @returns {boolean}
  */
+// -------------------------------------------------------------------------------
 async function isOwner_survey_field(survey_field_id, email) {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email`,
@@ -88,6 +90,7 @@ async function isOwner_survey_field(survey_field_id, email) {
  * @param {number} survey_field_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_field_for_survey_field_id(survey_field_id) {
   return await performQuery(
     `
@@ -113,6 +116,7 @@ async function get_survey_field_for_survey_field_id(survey_field_id) {
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_fields_list_for_survey_id__all(
   survey_id,
   order_by = "id",
@@ -158,6 +162,7 @@ async function get_survey_fields_list_for_survey_id__all(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_survey_fields_list_for_survey_id__public(
   survey_id,
   order_by = "id",
@@ -202,6 +207,7 @@ async function get_survey_fields_list_for_survey_id__public(
  * @param {string} title
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function create_survey_field(field_type_id, survey_id, title) {
   return await performQuery(
     `INSERT INTO survey_fields (field_type_id, survey_id, title)
@@ -223,6 +229,7 @@ async function create_survey_field(field_type_id, survey_id, title) {
  * @param {number} survey_field_type_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function update_survey_field(
   survey_field_id,
   survey_field_title,
@@ -252,6 +259,7 @@ async function update_survey_field(
  * @param {number} survey_field_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function delete_survey_field(survey_field_id) {
   return await performQuery(
     `DELETE FROM survey_fields

@@ -10,6 +10,7 @@ const { performQuery } = require("./db");
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function getUserPasswordAndAdminStatus(email) {
   return await performQuery(
     `SELECT password, isadmin FROM accounts WHERE email = :email`,
@@ -29,6 +30,7 @@ async function getUserPasswordAndAdminStatus(email) {
  * @param {boolean} is_admin
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function register(email, password, is_admin = false) {
   return await performQuery(
     `
@@ -51,6 +53,7 @@ async function register(email, password, is_admin = false) {
  * @param {string | number} password
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function change_password(email, password) {
   return await performQuery(
     `

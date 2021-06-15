@@ -13,6 +13,7 @@ const columns = ["id", "survey_id", "account_id", "created_at", "modified_at"];
  * @param {number} filled_survey_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function isPublic_filled_survey(filled_survey_id) {
   let result = await performQuery(
     `
@@ -42,6 +43,7 @@ async function isPublic_filled_survey(filled_survey_id) {
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function isOwner_filled_survey(filled_survey_id, email) {
   let account_id = await performQuery(
     `
@@ -81,6 +83,7 @@ async function isOwner_filled_survey(filled_survey_id, email) {
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function isSurveyOwner_filled_survey(filled_survey_id, email) {
   let account_id = await performQuery(
     `
@@ -121,6 +124,7 @@ async function isSurveyOwner_filled_survey(filled_survey_id, email) {
  * @param {number} filled_survey_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_filled_survey_for_filled_survey_id(filled_survey_id) {
   return await performQuery(
     `SELECT * 
@@ -144,6 +148,7 @@ async function get_filled_survey_for_filled_survey_id(filled_survey_id) {
  * @param {string} order
  * @returns
  */
+// -------------------------------------------------------------------------------
 async function get_filled_survey_list_for_email__all(
   email,
   order_by = "id",
@@ -200,6 +205,7 @@ async function get_filled_survey_list_for_email__all(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_filled_survey_list_for_email__filledSurveyOwner(
   email,
   order_by = "id",
@@ -254,6 +260,7 @@ async function get_filled_survey_list_for_email__filledSurveyOwner(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_filled_survey_list_for_email__surveyOwner(
   email,
   order_by = "id",
@@ -310,6 +317,7 @@ async function get_filled_survey_list_for_email__surveyOwner(
  * @param {string} order
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function get_filled_survey_list_for_email__public(
   email,
   order_by = "id",
@@ -364,6 +372,7 @@ async function get_filled_survey_list_for_email__public(
  * @param {string} email
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function create_filled_survey_for_survey_id(survey_id, email) {
   if (email) {
     let account_id = await performQuery(
@@ -400,6 +409,7 @@ async function create_filled_survey_for_survey_id(survey_id, email) {
  * @param {number} filled_survey_id
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function delete_filled_survey(filled_survey_id) {
   return await performQuery(
     `DELETE FROM filled_surveys

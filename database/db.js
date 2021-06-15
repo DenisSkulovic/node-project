@@ -24,6 +24,7 @@ const pool = new Pool({
  * @param {object} kwargs An object with values to parametrise the query with.
  * @returns {object} query result
  */
+// -------------------------------------------------------------------------------
 async function performQuery(query, kwargs) {
   console.log("query", query);
   let client = await pool.connect();

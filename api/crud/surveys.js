@@ -161,6 +161,9 @@ router.post("/create", async function (req, res) {
  */
 router.put("/:surveyID(\\d+)/update", async function (req, res) {
   let user = authenticateAccessToken(req);
+  if (!req.body.survey_title || !req.body.public || !req.params.surveyID) {
+    return res.status(status["bad"]).end();
+  }
 
   // only allow owners or admins to update
   if (!isOwner_survey(req.params.surveyID, user.email) || !user.isadmin) {
