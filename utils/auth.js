@@ -6,9 +6,10 @@ const jwt = require("jsonwebtoken");
 //
 // ###################################################################################
 /**
- *
- * @param {*} req
- * @returns
+ * Authenticate request object. The request has to have an "AccessToken" header.
+ * Returns a deciphered token with email, admin status, etc.
+ * @param {object} req
+ * @returns {object}
  */
 function authenticateAccessToken(req) {
   const accessToken = req.header("AccessToken");
@@ -37,9 +38,10 @@ function authenticateAccessToken(req) {
 //
 // ###################################################################################
 /**
- *
- * @param {*} req
- * @returns
+ * Authenticate request object. The request has to have a "RefreshToken" header.
+ * Returns a deciphered token with email, admin status, etc.
+ * @param {object} req
+ * @returns {object}
  */
 function authenticateRefreshToken(req) {
   const refreshToken = req.header("RefreshToken");
@@ -67,9 +69,9 @@ function authenticateRefreshToken(req) {
 //
 // ###################################################################################
 /**
- *
+ * Get an AccessToken for the provided data. Assigns an expiry to the token.
  * @param {object} data
- * @returns
+ * @returns {string}
  */
 function generateAccessToken(data) {
   return jwt.sign(data, process.env.SECRET, {
@@ -83,9 +85,9 @@ function generateAccessToken(data) {
 //
 // ###################################################################################
 /**
- *
- * @param {*} data
- * @returns
+ * Get a RefreshToken for the provided data. Assigns an expiry to the token.
+ * @param {object} data
+ * @returns {string}
  */
 function generateRefreshToken(data) {
   return jwt.sign(data, process.env.REFRESH_SECRET);

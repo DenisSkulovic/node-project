@@ -1,4 +1,5 @@
 const { performQuery } = require("./db");
+const handlePageSize = require("../utils/page_size");
 
 const columns = [
   "id",
@@ -162,7 +163,7 @@ async function get_filled_fields_list_for_filled_survey_id(
   per_page = 10,
   order = "ASC"
 ) {
-  per_page = per_page > 100 ? 100 : per_page;
+  per_page = handlePageSize(per_page, "large");
   let page_num = parseInt(page);
   let per_page_num = parseInt(per_page);
   let offset = page_num * per_page_num - per_page_num;
