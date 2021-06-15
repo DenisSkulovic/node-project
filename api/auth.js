@@ -45,6 +45,7 @@ router.post("/refreshtoken", async (req, res) => {
 
   let message = getSuccessMessage(user);
   message["isAuthenticated"] = true;
+  message["isAdmin"] = isadmin ? true : false;
   return res.status(status["success"]).json({
     accessToken: accessToken,
     message: message,
