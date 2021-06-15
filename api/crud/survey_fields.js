@@ -2,20 +2,23 @@ const express = require("express");
 const router = express.Router();
 const {
   getSuccessMessage,
-  errorMessage,
+  // errorMessage,
   status,
 } = require("../../utils/status");
 const {
-  isPublic_survey_field,
+  // isPublic_survey_field,
   isOwner_survey_field,
   get_survey_field_for_survey_field_id,
-  get_survey_fields_list_for_survey_id__all,
+  // get_survey_fields_list_for_survey_id__all,
   get_survey_fields_list_for_survey_id__public,
   create_survey_field,
   update_survey_field,
-  delete_survey_field,
+  // delete_survey_field,
 } = require("../../database/survey_fields");
-const { isPublic_survey, isOwner_survey } = require("../../database/surveys");
+const {
+  // isPublic_survey,
+  isOwner_survey,
+} = require("../../database/surveys");
 const { authenticateAccessToken } = require("../../utils/auth");
 
 //

@@ -2,19 +2,32 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
+//
+//
+//
+//
+// ###################################################################################
 // package imports
 let createError = require("http-errors");
 let express = require("express");
 let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
-// const session = require("express-session");
 var cors = require("cors");
-const secret = process.env.SECRET;
 
+//
+//
+//
+//
+// ###################################################################################
+// init app
 let app = express();
 
-//####################################################################
+//
+//
+//
+//
+// ###################################################################################
 // CORS
 var allowedOrigins = ["http://localhost", "http://127.0.0.1"];
 app.use(
@@ -33,18 +46,23 @@ app.use(
     },
   })
 );
-//####################################################################
 
+//
+//
+//
+//
+// ###################################################################################
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "static")));
 
-// catch the annoying useless favicon.ico request (because this is an API, no HTML is served)
-app.get("/favicon.ico", (req, res) => res.status(204));
-
-//####################################################################
+//
+//
+//
+//
+// ###################################################################################
 // ROUTES
 let adminRouter = require("./api/admin");
 let authRouter = require("./api/auth");
@@ -70,6 +88,9 @@ app.get("/", (req, res) =>
     },
   ])
 );
+
+// catch the annoying useless favicon.ico request (because this is an API, no HTML is served)
+app.get("/favicon.ico", (req, res) => res.status(204));
 
 //####################################################################
 

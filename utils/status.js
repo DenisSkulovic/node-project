@@ -4,6 +4,7 @@
  * @returns {object}
  */
 function getSuccessMessage(user) {
+  // anonymous
   if (!user) {
     return {
       status: "success",
@@ -11,6 +12,7 @@ function getSuccessMessage(user) {
       isAdmin: false,
     };
   }
+  // authenticated
   if (!user.isadmin) {
     return {
       status: "success",
@@ -18,6 +20,7 @@ function getSuccessMessage(user) {
       isAdmin: false,
     };
   }
+  // admin
   return {
     status: "success",
     isAuthenticated: true,
@@ -25,8 +28,18 @@ function getSuccessMessage(user) {
   };
 }
 
+//
+//
+//
+//
+// ###################################################################################
 const errorMessage = { status: "error" };
 
+//
+//
+//
+//
+// ###################################################################################
 const status = {
   success: 200,
   error: 500,
@@ -39,6 +52,11 @@ const status = {
   nocontent: 204,
 };
 
+//
+//
+//
+//
+// ###################################################################################
 module.exports = {
   getSuccessMessage,
   errorMessage,
