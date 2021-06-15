@@ -93,8 +93,8 @@ async function isOwner_filled_field(filled_field_id, email) {
  */
 async function isSurveyOwner_filled_field(filled_field_id, email) {
   let account_id = await performQuery(
-    `SELECT id FROM accounts WHERE email = $1`,
-    [email]
+    `SELECT id FROM accounts WHERE email = :email`,
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return false;

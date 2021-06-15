@@ -159,7 +159,7 @@ async function resetDatabase() {
   FOR EACH ROW
   EXECUTE PROCEDURE trigger_set_timestamp();
   `,
-    []
+    {}
   );
 
   await performQuery(
@@ -171,7 +171,7 @@ async function resetDatabase() {
           ("input_number"),
           ("input_checkbox");
   `,
-    []
+    {}
   );
 
   return await performQuery(
