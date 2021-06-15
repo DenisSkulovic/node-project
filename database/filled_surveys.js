@@ -138,7 +138,11 @@ async function get_filled_survey_for_filled_survey_id(filled_survey_id) {
 /**
  *
  * @param {string} email
- * @returns {object} query result
+ * @param {string} order_by
+ * @param {number} page
+ * @param {number} per_page
+ * @param {string} order
+ * @returns
  */
 async function get_filled_survey_list_for_email__all(
   email,
@@ -190,6 +194,10 @@ async function get_filled_survey_list_for_email__all(
 /**
  *
  * @param {string} email
+ * @param {string} order_by
+ * @param {number} page
+ * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_filled_survey_list_for_email__filledSurveyOwner(
@@ -240,6 +248,10 @@ async function get_filled_survey_list_for_email__filledSurveyOwner(
 /**
  *
  * @param {string} email
+ * @param {string} order_by
+ * @param {number} page
+ * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_filled_survey_list_for_email__surveyOwner(
@@ -292,6 +304,10 @@ async function get_filled_survey_list_for_email__surveyOwner(
 /**
  *
  * @param {string} email
+ * @param {string} order_by
+ * @param {number} page
+ * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_filled_survey_list_for_email__public(

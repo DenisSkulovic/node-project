@@ -195,6 +195,7 @@ async function get_survey_for_survey_id__owner(survey_id, email) {
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list_for_email__all(
@@ -239,6 +240,7 @@ async function get_survey_list_for_email__all(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list_for_email__public_or_owner(
@@ -284,6 +286,7 @@ async function get_survey_list_for_email__public_or_owner(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list_for_email__owner(
@@ -326,6 +329,7 @@ async function get_survey_list_for_email__owner(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list__all(
@@ -364,6 +368,7 @@ async function get_survey_list__all(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list__public_or_owner(
@@ -409,6 +414,7 @@ async function get_survey_list__public_or_owner(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list__owner(
@@ -452,6 +458,7 @@ async function get_survey_list__owner(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list__public(
@@ -494,6 +501,7 @@ async function get_survey_list__public(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_list_for_email__public(

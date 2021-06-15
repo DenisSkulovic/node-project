@@ -110,6 +110,7 @@ async function get_survey_field_for_survey_field_id(survey_field_id) {
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_fields_list_for_survey_id__all(
@@ -154,6 +155,7 @@ async function get_survey_fields_list_for_survey_id__all(
  * @param {string} order_by
  * @param {number} page
  * @param {number} per_page
+ * @param {string} order
  * @returns {object} query result
  */
 async function get_survey_fields_list_for_survey_id__public(
