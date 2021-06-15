@@ -171,7 +171,11 @@ router.put("/:surveyID(\\d+)/update", async function (req, res) {
   }
 
   // prevent attempt to change survey from private to public
-  if (req.body.public === true && !isPublic_survey(req.params.surveyID)) {
+  if (
+    req.body.public === true &&
+    !isPublic_survey(req.params.surveyID) &&
+    !user.isadmin
+  ) {
     return res.status(status["forbidden"]).end();
   }
 
