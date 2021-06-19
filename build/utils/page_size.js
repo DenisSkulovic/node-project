@@ -1,10 +1,12 @@
 "use strict";
-var sizes = {
-    small: process.env.MAX_QUERY_SIZE_SMALL,
-    medium: process.env.MAX_QUERY_SIZE_MEDIUM,
-    large: process.env.MAX_QUERY_SIZE_LARGE,
-    huge: process.env.MAX_QUERY_SIZE_HUMONGOUS,
-};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.handlePageSize = void 0;
+var sizes = new Map([
+    ["small", process.env["MAX_QUERY_SIZE_SMALL"]],
+    ["medium", process.env["MAX_QUERY_SIZE_MEDIUM"]],
+    ["large", process.env["MAX_QUERY_SIZE_LARGE"]],
+    ["huge", process.env["MAX_QUERY_SIZE_HUMONGOUS"]],
+]);
 //
 //
 //
@@ -16,12 +18,12 @@ var sizes = {
  * @param {string} size
  * @returns {number}
  */
-function handlePageSize(per_page, size) {
-    return per_page > sizes[size] ? sizes[size] : per_page;
-}
+var handlePageSize = function (per_page, size) {
+    return per_page > parseInt(sizes.get(size)) ? parseInt(sizes.get(size)) : per_page;
+};
+exports.handlePageSize = handlePageSize;
 //
 //
 //
 //
 // ###################################################################################
-module.exports = handlePageSize;

@@ -1,4 +1,7 @@
-import express, { Express, Request, Response, NextFunction } from "express";
+import express, {
+  Express, Request, Response,
+  // NextFunction
+} from "express";
 
 // env
 import dotenv from "dotenv";
@@ -65,13 +68,13 @@ app.use(express.static(path.join(__dirname, "static")));
 //
 // ###################################################################################
 // ROUTES
-let adminRouter = require("./api/admin");
-let authRouter = require("./api/auth");
-let fieldTypesRouter = require("./api/crud/field_types");
-let filledFieldsRouter = require("./api/crud/filled_fields");
-let filledSurveysRouter = require("./api/crud/filled_surveys");
-let surveyFieldsRouter = require("./api/crud/survey_fields");
-let surveysRouter = require("./api/crud/surveys");
+import adminRouter from "./api/admin"
+import authRouter from "./api/auth"
+import fieldTypesRouter from "./api/crud/field_types"
+import filledFieldsRouter from './api/crud/filled_fields'
+import filledSurveysRouter from "./api/crud/filled_surveys"
+import surveyFieldsRouter from "./api/crud/survey_fields"
+import surveysRouter from "./api/crud/surveys"
 
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
@@ -100,9 +103,9 @@ app.use(function (_req: Request, _res: Response, next) {
   next(createError(404));
 });
 
-// error handler
-app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
-  return res.status(500).json({ error: error.toString() });
-});
+// // error handler
+// app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+//   return res.status(500).json({ error: error.toString() });
+// });
 
 module.exports = app;
