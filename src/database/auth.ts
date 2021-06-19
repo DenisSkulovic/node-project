@@ -1,4 +1,4 @@
-const { performQuery } = require("./db");
+import { performQuery } from "./db";
 
 //
 //
@@ -7,15 +7,12 @@ const { performQuery } = require("./db");
 // ###############################################################################
 /**
  * Retrieve user password and admin status.
- * @param {string} email
- * @returns {object} query result
  */
 // -------------------------------------------------------------------------------
-async function getUserPasswordAndAdminStatus(email) {
+export const getUserPasswordAndAdminStatus = async (email: string) => {
   return await performQuery(
     `SELECT password, isadmin FROM accounts WHERE email = :email`,
-    { email: email }
-  );
+    new Map([["email", email]]));
 }
 
 //
@@ -25,20 +22,20 @@ async function getUserPasswordAndAdminStatus(email) {
 // ###############################################################################
 /**
  * Insert new user into "accounts" table.
- * @param {string} email
- * @param {string | number} password
- * @param {boolean} is_admin
- * @returns {object} query result
  */
 // -------------------------------------------------------------------------------
-async function register(email, password, is_admin = false) {
+export const register = async (email: string, password: string, is_admin = false) => {
   return await performQuery(
     `
     INSERT INTO accounts (email, password, isadmin)
         VALUES (:email, :password, :is_admin)
         RETURNING email, isadmin;
     `,
-    { email: email, password: password, is_admin: is_admin }
+    {
+      email: email,
+      password: password,
+      is_admin: is_admin
+    }
   );
 }
 
@@ -49,12 +46,9 @@ async function register(email, password, is_admin = false) {
 // ###############################################################################
 /**
  * Change password for user in "accounts" table
- * @param {string} email
- * @param {string | number} password
- * @returns {object} query result
  */
 // -------------------------------------------------------------------------------
-async function change_password(email, password) {
+export const change_password = async (email: string, password: string) => {
   return await performQuery(
     `
     UPDATE accounts
@@ -62,17 +56,7 @@ async function change_password(email, password) {
       WHERE email = :email
       RETURNING email, isadmin;
     `,
-    { password: password, email: email }
+    new Map([["password", password], ["email", email]])
+
   );
 }
-
-//
-//
-//
-//
-// ###############################################################################
-module.exports = {
-  getUserPasswordAndAdminStatus,
-  register,
-  change_password,
-};

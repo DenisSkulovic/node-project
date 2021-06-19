@@ -1,4 +1,4 @@
-const { performQuery } = require("./db");
+import { performQuery } from "./db";
 
 //
 //
@@ -7,16 +7,14 @@ const { performQuery } = require("./db");
 // ##################################################################################################
 /**
  * Retrieve user data without password.
- * @param {string} email
- * @returns {object} query result
  */
 // -------------------------------------------------------------------------------
-async function get_account_passwordless(email) {
+export const get_account_passwordless = async (email: string) => {
   return await performQuery(
     `SELECT id, email, is_admin, created_at, modified_at 
     FROM accounts 
     WHERE email = :email;`,
-    { email: email }
+    new Map([["email", email]])
   );
 }
 
@@ -27,25 +25,13 @@ async function get_account_passwordless(email) {
 // ##################################################################################################
 /**
  * Retrieve user data including password (UNSAFE)
- * @param {string} email
- * @returns {object} query result
  */
 // -------------------------------------------------------------------------------
-async function get_account_full(email) {
+export const get_account_full = async (email: string) => {
   return await performQuery(
     `SELECT * 
     FROM accounts 
     WHERE email = :email;`,
-    { email: email }
+    new Map([["email", email]])
   );
 }
-
-//
-//
-//
-//
-// ##################################################################################################
-module.exports = {
-  get_account_passwordless,
-  get_account_full,
-};

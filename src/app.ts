@@ -1,5 +1,7 @@
+import express, { Express, Request, Response, NextFunction } from "express";
+
 // env
-const dotenv = require("dotenv");
+import dotenv from "dotenv";
 dotenv.config();
 
 //
@@ -9,7 +11,6 @@ dotenv.config();
 // ###################################################################################
 // package imports
 let createError = require("http-errors");
-let express = require("express");
 let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
@@ -21,7 +22,7 @@ var cors = require("cors");
 //
 // ###################################################################################
 // init app
-let app = express();
+let app: Express = express();
 
 //
 //
@@ -32,7 +33,7 @@ let app = express();
 var allowedOrigins = ["http://localhost", "http://127.0.0.1"];
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: function (origin: string, callback: Function) {
       // allow requests with no origin
       // (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
@@ -81,7 +82,7 @@ app.use("/survey-fields", surveyFieldsRouter);
 app.use("/surveys", surveysRouter);
 
 // empty home page
-app.get("/", (req, res) =>
+app.get("/", (_req: Request, res: Response) =>
   res.status(200).json([
     {
       message: "This is the Survey Project API. This specific url is not used.",
@@ -90,24 +91,18 @@ app.get("/", (req, res) =>
 );
 
 // catch the annoying useless favicon.ico request (because this is an API, no HTML is served)
-app.get("/favicon.ico", (req, res) => res.status(204));
+app.get("/favicon.ico", (_req: Request, res: Response) => res.status(204));
 
 //####################################################################
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use(function (_req: Request, _res: Response, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function (err, req, res) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.json([{ message: "Server error 500" }]);
+app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+  return res.status(500).json({ error: error.toString() });
 });
 
 module.exports = app;

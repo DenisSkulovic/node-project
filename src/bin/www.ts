@@ -6,7 +6,7 @@ var debug = require("debug")("node-proj:server");
 var http = require("http");
 
 // Get port from environment and store in Express.
-var port = normalizePort(process.env.PORT || "8000");
+var port = normalizePort(process.env["PORT"] || "8000");
 app.set("port", port);
 
 // Create HTTP server.
@@ -18,7 +18,7 @@ server.on("error", onError);
 server.on("listening", onListening);
 
 // Normalize a port into a number, string, or false.
-function normalizePort(val) {
+function normalizePort(val: string) {
   var port = parseInt(val, 10);
   if (isNaN(port)) {
     return val; // named pipe
@@ -30,7 +30,7 @@ function normalizePort(val) {
 }
 
 // Event listener for HTTP server "error" event.
-function onError(error) {
+function onError(error: any) {
   if (error.syscall !== "listen") {
     throw error;
   }

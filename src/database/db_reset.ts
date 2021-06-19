@@ -1,4 +1,4 @@
-const { performQuery } = require("./db");
+import { performQuery } from "./db";
 
 //
 //
@@ -10,7 +10,7 @@ const { performQuery } = require("./db");
  * @returns {object} Query result after creating an admin account. Contains the admin email and admin status.
  */
 // -------------------------------------------------------------------------------
-async function resetDatabase() {
+export const resetDatabase = async () => {
   await performQuery(
     `
   DROP TABLE IF EXISTS accounts CASCADE;
@@ -181,13 +181,10 @@ async function resetDatabase() {
     VALUES (:email, :password, :isadmin)
     RETURNIING email, isadmin;
     `,
-    { email: "admin@email.com", password: "123456789", isadmin: true }
+    {
+      email: "admin@email.com",
+      password: "123456789",
+      isadmin: true
+    }
   );
 }
-
-//
-//
-//
-//
-// ###############################################################################
-module.exports = resetDatabase;

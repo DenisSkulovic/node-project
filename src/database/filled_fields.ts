@@ -1,5 +1,5 @@
-const { performQuery } = require("./db");
-const handlePageSize = require("../utils/page_size");
+import { performQuery } from "./db";
+import { handlePageSize } from "../utils/page_size";
 
 const columns = [
   "id",
@@ -15,13 +15,7 @@ const columns = [
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} filled_field_id
- * @returns {boolean}
- */
-// -------------------------------------------------------------------------------
-async function isPublic_filled_field(filled_field_id) {
+export const isPublic_filled_field = async (filled_field_id: number) => {
   let result = await performQuery(
     `
     SELECT s.public
@@ -33,7 +27,7 @@ async function isPublic_filled_field(filled_field_id) {
     WHERE ff.id = :filled_field_id
     AND s.public = true;
   `,
-    { filled_field_id: filled_field_id }
+    new Map([["filled_field_id", filled_field_id]])
   );
   if (result.rows.length > 0) {
     return true;
@@ -46,18 +40,11 @@ async function isPublic_filled_field(filled_field_id) {
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} filled_field_id
- * @param {string} email
- * @returns {boolean}
- */
-// -------------------------------------------------------------------------------
-async function isOwner_filled_field(filled_field_id, email) {
+export const isOwner_filled_field = async (filled_field_id: number, email: string) => {
   let account_id = await performQuery(
     `
   SELECT id FROM accounts WHERE email = :email;`,
-    { email: email }
+    new Map([["email", email]])
   );
   if (account_id.rows.length === 0) {
     return false;
@@ -75,7 +62,7 @@ async function isOwner_filled_field(filled_field_id, email) {
     WHERE ff.id = :filled_field_id
     AND fs.account_id = :account_id;
   `,
-    { filled_field_id: filled_field_id, account_id: account_id }
+    new Map([["filled_field_id", filled_field_id], ["account_id", account_id]])
   );
   if (result.rows.length > 0) {
     return true;
@@ -88,17 +75,10 @@ async function isOwner_filled_field(filled_field_id, email) {
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} filled_field_id
- * @param {string} email
- * @returns {object} query result
- */
-// -------------------------------------------------------------------------------
-async function isSurveyOwner_filled_field(filled_field_id, email) {
+export const isSurveyOwner_filled_field = async (filled_field_id: number, email: string) => {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email`,
-    { email: email }
+    new Map([["email", email]])
   );
   if (account_id.rows.length === 0) {
     return false;
@@ -116,7 +96,10 @@ async function isSurveyOwner_filled_field(filled_field_id, email) {
     WHERE ff.id = :filled_field_id
     AND s.account_id = :account_id;
   `,
-    { filled_field_id: filled_field_id, account_id: account_id }
+    new Map([
+      ["filled_field_id", filled_field_id],
+      ["account_id", account_id]
+    ])
   );
   if (result.rows.length > 0) {
     return true;
@@ -129,20 +112,17 @@ async function isSurveyOwner_filled_field(filled_field_id, email) {
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} filled_field_id
- * @returns {object} query result
- */
-// -------------------------------------------------------------------------------
-async function get_filled_field_for_filled_field_id(filled_field_id) {
+export const get_filled_field_for_filled_field_id = async (filled_field_id: number) => {
   return await performQuery(
     `
     SELECT * 
     FROM filled_fields
     WHERE id = :filled_field_id;
   `,
-    { filled_field_id: filled_field_id }
+    new Map([
+      ["filled_field_id", filled_field_id]
+    ]
+    )
   );
 }
 
@@ -151,27 +131,15 @@ async function get_filled_field_for_filled_field_id(filled_field_id) {
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} filled_survey_id
- * @param {string} order_by
- * @param {number} page
- * @param {number} per_page
- * @param {string} order
- * @returns {object} query result
- */
-// -------------------------------------------------------------------------------
-async function get_filled_fields_list_for_filled_survey_id(
-  filled_survey_id,
-  order_by = "id",
-  page = 1,
-  per_page = 10,
-  order = "ASC"
-) {
+export const get_filled_fields_list_for_filled_survey_id = async (
+  filled_survey_id: number,
+  order_by: string = "id",
+  page: number = 1,
+  per_page: number = 10,
+  order: string = "ASC"
+) => {
   per_page = handlePageSize(per_page, "large");
-  let page_num = parseInt(page);
-  let per_page_num = parseInt(per_page);
-  let offset = page_num * per_page_num - per_page_num;
+  let offset = page * per_page - per_page;
   return await performQuery(
     `SELECT ff.*
     FROM filled_fields ff
@@ -181,13 +149,13 @@ async function get_filled_fields_list_for_filled_survey_id(
     ORDER BY ff.${columns.includes(order_by) ? order_by : "id"}
     ${order === "DESC" ? "DESC" : "ASC"}    
     OFFSET :offset
-    LIMIT :per_page_num;`,
+    LIMIT :per_page;`,
     {
       filled_survey_id: filled_survey_id,
       order: order,
       order_by: order_by,
       offset: offset,
-      per_page_num: per_page_num,
+      per_page: per_page
     }
   );
 }
@@ -197,15 +165,7 @@ async function get_filled_fields_list_for_filled_survey_id(
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} survey_field_id
- * @param {number} filled_survey_id
- * @param {string} answer
- * @returns {object} query result
- */
-// -------------------------------------------------------------------------------
-async function create_filled_field(survey_field_id, filled_survey_id, answer) {
+export const create_filled_field = async (survey_field_id: number, filled_survey_id: number, answer: string) => {
   return await performQuery(
     `INSERT INTO filled_fields (survey_field_id, filled_survey_id, answer)
     VALUES (:survey_field_id, :filled_survey_id, :answer)
@@ -213,7 +173,7 @@ async function create_filled_field(survey_field_id, filled_survey_id, answer) {
     {
       survey_field_id: survey_field_id,
       filled_survey_id: filled_survey_id,
-      answer: answer,
+      answer: answer
     }
   );
 }
@@ -223,21 +183,12 @@ async function create_filled_field(survey_field_id, filled_survey_id, answer) {
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} survey_field_id
- * @param {number} filled_survey_id
- * @param {string} answer
- * @param {number} filled_field_id
- * @returns {object} query result
- */
-// -------------------------------------------------------------------------------
-async function update_filled_field(
-  survey_field_id,
-  filled_survey_id,
-  answer,
-  filled_field_id
-) {
+export const update_filled_field = async (
+  survey_field_id: number,
+  filled_survey_id: number,
+  answer: string,
+  filled_field_id: number
+) => {
   return await performQuery(
     `UPDATE survey_fields
     SET survey_field_id = :survey_field_id
@@ -249,7 +200,7 @@ async function update_filled_field(
       survey_field_id: survey_field_id,
       filled_survey_id: filled_survey_id,
       answer: answer,
-      filled_field_id: filled_field_id,
+      filled_field_id: filled_field_id
     }
   );
 }
@@ -259,32 +210,12 @@ async function update_filled_field(
 //
 //
 // ###############################################################################
-/**
- *
- * @param {number} filled_field_id
- * @returns {object} query result
- */
-// -------------------------------------------------------------------------------
-async function delete_filled_field(filled_field_id) {
+export const delete_filled_field = async (filled_field_id: number) => {
   return await performQuery(
     `DELETE FROM filled_fields
     WHERE id = :filled_field_id`,
-    { filled_field_id: filled_field_id }
+    new Map([
+      ["filled_field_id", filled_field_id]
+    ])
   );
 }
-
-//
-//
-//
-//
-// ###############################################################################
-module.exports = {
-  isPublic_filled_field,
-  isOwner_filled_field,
-  isSurveyOwner_filled_field,
-  get_filled_field_for_filled_field_id,
-  get_filled_fields_list_for_filled_survey_id,
-  create_filled_field,
-  update_filled_field,
-  delete_filled_field,
-};
