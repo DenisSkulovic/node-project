@@ -12,7 +12,7 @@ import { performQuery } from "./db";
 export const getUserPasswordAndAdminStatus = async (email: string) => {
   return await performQuery(
     `SELECT password, isadmin FROM accounts WHERE email = :email`,
-    new Map([["email", email]]));
+    { email: email });
 }
 
 //

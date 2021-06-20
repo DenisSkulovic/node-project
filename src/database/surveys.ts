@@ -18,7 +18,7 @@ const columns: string[] = [
 export const isOwner_survey = async (survey_id: number, email: string) => {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email=:email`,
-    new Map([["email", email]])
+    {email: email}
   );
   if (account_id.rows.length === 0) {
     return false;
@@ -87,7 +87,7 @@ export const get_survey_for_survey_id__public = async (survey_id: number) => {
 export const get_survey_for_survey_id__public_or_owner = async (survey_id: number, email: string) => {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email`,
-    new Map([["email", email]])
+    {email: email}
   );
   if (account_id.rows.length === 0) {
     return account_id;
@@ -135,7 +135,7 @@ export const get_survey_for_survey_id__owner = async (survey_id: number, email: 
   let account_id = await performQuery(
     `
   SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    {email: email}
   );
   if (account_id.rows.length === 0) {
     return account_id;
@@ -432,7 +432,7 @@ export const get_survey_list_for_email__public = async (
 export const create_survey_for_email = async (email: string, survey_title: string) => {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    {email: email}
   );
   account_id = account_id["rows"][0]["id"];
 

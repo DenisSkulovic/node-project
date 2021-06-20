@@ -41,7 +41,7 @@ export const isPublic_survey_field = async (survey_field_id: number) => {
 export const isOwner_survey_field = async (survey_field_id: number, email: string) => {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email`,
-    new Map([["email", email]]));
+    { email: email });
   if (account_id.rows.length === 0) {
     return false;
   }

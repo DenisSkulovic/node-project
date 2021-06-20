@@ -3,7 +3,6 @@ import { LooseObject } from "types";
 const router = express.Router();
 import {
   getSuccessMessage,
-  // errorMessage,
   st
 } from "../../utils/status";
 import {

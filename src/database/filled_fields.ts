@@ -44,7 +44,7 @@ export const isOwner_filled_field = async (filled_field_id: number, email: strin
   let account_id = await performQuery(
     `
   SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return false;
@@ -78,7 +78,7 @@ export const isOwner_filled_field = async (filled_field_id: number, email: strin
 export const isSurveyOwner_filled_field = async (filled_field_id: number, email: string) => {
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return false;

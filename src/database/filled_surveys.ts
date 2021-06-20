@@ -35,7 +35,7 @@ export const isOwner_filled_survey = async (filled_survey_id: number, email: str
   let account_id = await performQuery(
     `
   SELECT id FROM accounts WHERE email = :email`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return false;
@@ -71,7 +71,7 @@ export const isSurveyOwner_filled_survey = async (filled_survey_id: number, emai
   let account_id = await performQuery(
     `
   SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return false;
@@ -130,7 +130,7 @@ export const get_filled_survey_list_for_email__all = async (
   let offset = page * per_page - per_page;
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return account_id;
@@ -175,7 +175,7 @@ export const get_filled_survey_list_for_email__filledSurveyOwner = async (
   let offset = page * per_page - per_page;
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return account_id;
@@ -218,7 +218,7 @@ export const get_filled_survey_list_for_email__surveyOwner = async (
   let offset = page * per_page - per_page;
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return account_id;
@@ -263,7 +263,7 @@ export const get_filled_survey_list_for_email__public = async (
   let offset = page * per_page - per_page;
   let account_id = await performQuery(
     `SELECT id FROM accounts WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
   if (account_id.rows.length === 0) {
     return account_id;
@@ -302,7 +302,7 @@ export const create_filled_survey_for_survey_id = async (survey_id: number, emai
   if (email) {
     let account_id = await performQuery(
       `SELECT id FROM accounts WHERE email = :email;`,
-      new Map([["email", email]])
+      { email: email }
     );
     if (account_id.rows.length === 0) {
       return account_id;

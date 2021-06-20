@@ -14,7 +14,7 @@ export const get_account_passwordless = async (email: string) => {
     `SELECT id, email, is_admin, created_at, modified_at 
     FROM accounts 
     WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
 }
 
@@ -32,6 +32,6 @@ export const get_account_full = async (email: string) => {
     `SELECT * 
     FROM accounts 
     WHERE email = :email;`,
-    new Map([["email", email]])
+    { email: email }
   );
 }
